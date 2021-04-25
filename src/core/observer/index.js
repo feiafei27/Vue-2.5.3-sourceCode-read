@@ -203,9 +203,7 @@ export function defineReactive (
   const getter = property && property.get
   const setter = property && property.set
 
-  // 如果 shallow 是 true 的话，childOb 的值则为 false
-  // 如果为 false 的话，则获取这个 val 的 observer 实例
-  // observe 还有将 val 转换成响应式的作用
+  // 这个 childOb（Observer类的实例）中的 dep 是用来保存数组类型值的依赖的
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -217,12 +215,12 @@ export function defineReactive (
       if (Dep.target) {
         // 向 dep 中添加依赖，依赖是 Watcher 的实例
         dep.depend()
-        // 如果 childOb 为 true 的话
         if (childOb) {
-          // 也向 observer 中的 dep 添加依赖
+          // childOb.dep 用来存储数组类型值的依赖
+          // 普通对象类型的值也会走到这里，数组类型和普通对象类型的值都会有 __ob__属性
+          // 也就是说：对于某一 val 而言，除了将依赖收集到 dep 中，也会将依赖收集到 val.__ob__.dep 中
           childOb.dep.depend()
-          // 这里是将对象的某个key变成响应式的。
-          // 但如果这个 key 本身是一个数组的话，还需要进行额外的处理
+          // 如果值是数组类型的话
           if (Array.isArray(value)) {
             dependArray(value)
           }
@@ -232,6 +230,7 @@ export function defineReactive (
       return value
     },
     set: function reactiveSetter (newVal) {
+      // 拿到旧的 value
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
       if (newVal === value || (newVal !== newVal && value !== value)) {
@@ -241,12 +240,16 @@ export function defineReactive (
       if (process.env.NODE_ENV !== 'production' && customSetter) {
         customSetter()
       }
+      // 如果存在用户自定义的 setter 的话，用这个用户自定义的 setter 赋值这个 value
       if (setter) {
         setter.call(obj, newVal)
       } else {
+        // 否则就直接将 newVal 赋值给 val
         val = newVal
       }
+      // 将新设置值中的 keys 也转换成响应式的
       childOb = !shallow && observe(newVal)
+      // 触发依赖的更新
       dep.notify()
     }
   })
@@ -313,6 +316,9 @@ export function del (target: Array<any> | Object, key: any) {
 /**
  * Collect dependencies on array elements when the array is touched, since
  * we cannot intercept array element access like property getters.
+ */
+/**
+ * 当数组 value 被使用的时候，收集数组中元素的依赖
  */
 function dependArray (value: Array<any>) {
   for (let e, i = 0, l = value.length; i < l; i++) {
