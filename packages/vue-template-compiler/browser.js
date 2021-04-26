@@ -143,7 +143,7 @@ var isBuiltInTag = makeMap('slot,component', true);
 var isReservedAttribute = makeMap('key,ref,slot,slot-scope,is');
 
 /**
- * Remove an item from an array
+ * 从数组中移除指定元素的工具函数
  */
 function remove (arr, item) {
   if (arr.length) {
@@ -1015,43 +1015,62 @@ var formatComponentName = (noop);
 /*  */
 
 
+// 起到一个计数的作用，每实例化 Dep 类一次，uid 就会加一
 var uid = 0;
 
 /**
  * A dep is an observable that can have multiple
  * directives subscribing to it.
  */
+/**
+ * 用于收集依赖的类
+ * 所谓的依赖就是一个个的 Watcher 实例
+ */
 var Dep = function Dep () {
+  // 将当前的 uid 当做 id 赋值给 id
   this.id = uid++;
+  // 初始化保存依赖的数组 subs
   this.subs = [];
 };
 
+// 向 subs 数组添加依赖的函数
 Dep.prototype.addSub = function addSub (sub) {
   this.subs.push(sub);
 };
 
+// 移除指定依赖的函数
 Dep.prototype.removeSub = function removeSub (sub) {
+  // 移除依赖的工具函数
   remove(this.subs, sub);
 };
 
+// 依赖函数
+// 执行该函数可以将 Dep.target 依赖 push 进 subs 数组中
 Dep.prototype.depend = function depend () {
   if (Dep.target) {
     Dep.target.addDep(this);
   }
 };
 
+// 触发 subs 数组中依赖的更新操作
 Dep.prototype.notify = function notify () {
-  // stabilize the subscriber list first
+  // 数组的 slice 函数具有拷贝的作用
   var subs = this.subs.slice();
+  // 遍历 subs 数组中的依赖项
   for (var i = 0, l = subs.length; i < l; i++) {
+    // 执行依赖项的 update 函数，触发执行依赖
     subs[i].update();
   }
 };
 
-// the current target watcher being evaluated.
-// this is globally unique because there could be only one
-// watcher being evaluated at any time.
+// 先将 Dep.target 的内容设置为 null
 Dep.target = null;
+// 该函数用于将 Watcher 实例设置给 Dep.target
+// 并且还会做缓存的处理，如果 Dep.target 已经设置了 Watcher 实例的话，先将它 push 到 targetStack 数组中，
+// 然后再将 _target 设置到 Dep.target 上面
+
+
+// 该函数用于将 targetStack 数组中的 Watcher 实例 pop 出来并设值到 Dep.target 上面
 
 /*  */
 
@@ -1109,12 +1128,14 @@ Object.defineProperties( VNode.prototype, prototypeAccessors );
 // multiple renders, cloning them avoids errors when DOM manipulations rely
 // on their elm reference.
 
-/*
- * not type checking this file because flow doesn't play well with
- * dynamically accessing methods on Array prototype
- */
+// 该文件用于重写 Array.prototype 对象中一些能够改变数组内容的函数
 
+// 拿到 Array 的 prototype 原型对象
 var arrayProto = Array.prototype;
+// 利用 Object.create() 创建一个新的对象，并且这个新的对象的原型链(__proto__)指向 arrayProto。
+// 这样的话，我们只需要将一些需要改写的方法定义到 arrayMethods 对象中即可。
+// 这样的话，我们既可以访问到 arrayMethods 对象中已经改写了的方法，也能访问到 arrayProto 对象中未改写的方法
+// ^o^ 完美！
 var arrayMethods = Object.create(arrayProto);[
   'push',
   'pop',
@@ -1124,29 +1145,39 @@ var arrayMethods = Object.create(arrayProto);[
   'sort',
   'reverse'
 ]
+  // 进行遍历处理
 .forEach(function (method) {
-  // cache original method
+  // 缓存原生的相应方法
   var original = arrayProto[method];
+  // 定义该 method 对应的自定义方法
   def(arrayMethods, method, function mutator () {
     var args = [], len = arguments.length;
     while ( len-- ) args[ len ] = arguments[ len ];
 
+    // 执行原生方法拿到执行结果值，在最后将这个结果值返回
     var result = original.apply(this, args);
-    // 这里的 this 是指数组的实例
+    // 这里的 this 是执行当前方法的数组的实例。在 Vue 中，每个数据都会有 __ob__ 属性，这个属性
+    // 是 Observer 的实例，该实例有一个 dep 属性（Dep 的实例），该属性能够收集数组的依赖
     var ob = this.__ob__;
+    // 数组有三种新增数据的方法。分别是：'push','unshift','splice'
+    // 这些新增的数据也需要变成响应式的，在这里，使用 inserted 变量记录新增的数据
     var inserted;
     switch (method) {
+      // 如果当前的方法是 push 或者 unshift 的话，新增的数据就是 args，将 args 设值给 inserted 即可
       case 'push':
       case 'unshift':
         inserted = args;
         break
+      // 如果当前的方法是 splice 的话，那么插入的数据就是 args.slice(2)
       case 'splice':
         inserted = args.slice(2);
         break
     }
+    // 如果的确新增了数据的话，将 inserted 作为参数执行 observer.observeArray() 方法，把新增的每个元素都变成响应式的
     if (inserted) { ob.observeArray(inserted); }
-    // notify change
+    // 通知 ob.dep 中的依赖
     ob.dep.notify();
+    // 在最后，返回 Array 方法执行的结果
     return result
   });
 });
@@ -1332,9 +1363,7 @@ function defineReactive (
   var getter = property && property.get;
   var setter = property && property.set;
 
-  // 如果 shallow 是 true 的话，childOb 的值则为 false
-  // 如果为 false 的话，则获取这个 val 的 observer 实例
-  // observe 还有将 val 转换成响应式的作用
+  // 这个 childOb（Observer类的实例）中的 dep 是用来保存数组类型值的依赖的
   var childOb = !shallow && observe(val);
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -1346,12 +1375,12 @@ function defineReactive (
       if (Dep.target) {
         // 向 dep 中添加依赖，依赖是 Watcher 的实例
         dep.depend();
-        // 如果 childOb 为 true 的话
         if (childOb) {
-          // 也向 observer 中的 dep 添加依赖
+          // childOb.dep 用来存储数组类型值的依赖
+          // 普通对象类型的值也会走到这里，数组类型和普通对象类型的值都会有 __ob__属性
+          // 也就是说：对于某一 val 而言，除了将依赖收集到 dep 中，也会将依赖收集到 val.__ob__.dep 中
           childOb.dep.depend();
-          // 这里是将对象的某个key变成响应式的。
-          // 但如果这个 key 本身是一个数组的话，还需要进行额外的处理
+          // 如果值是数组类型的话
           if (Array.isArray(value)) {
             dependArray(value);
           }
@@ -1361,6 +1390,7 @@ function defineReactive (
       return value
     },
     set: function reactiveSetter (newVal) {
+      // 拿到旧的 value
       var value = getter ? getter.call(obj) : val;
       /* eslint-disable no-self-compare */
       if (newVal === value || (newVal !== newVal && value !== value)) {
@@ -1370,12 +1400,16 @@ function defineReactive (
       if ("development" !== 'production' && customSetter) {
         customSetter();
       }
+      // 如果存在用户自定义的 setter 的话，用这个用户自定义的 setter 赋值这个 value
       if (setter) {
         setter.call(obj, newVal);
       } else {
+        // 否则就直接将 newVal 赋值给 val
         val = newVal;
       }
+      // 将新设置值中的 keys 也转换成响应式的
       childOb = !shallow && observe(newVal);
+      // 触发依赖的更新
       dep.notify();
     }
   });
@@ -1421,6 +1455,9 @@ function set (target, key, val) {
 /**
  * Collect dependencies on array elements when the array is touched, since
  * we cannot intercept array element access like property getters.
+ */
+/**
+ * 当数组 value 被使用的时候，收集数组中元素的依赖
  */
 function dependArray (value) {
   for (var e = (void 0), i = 0, l = value.length; i < l; i++) {
