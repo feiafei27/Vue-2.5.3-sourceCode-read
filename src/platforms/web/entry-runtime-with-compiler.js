@@ -14,11 +14,19 @@ const idToTemplate = cached(id => {
   return el && el.innerHTML
 })
 
+// 当前的版本是 compiler 加上 runtime 的完整版,
+
+// 这里的 Vue 是从 './runtime/index' 中导入的，在 './runtime/index' 中，Vue.prototype 中就已经定义了 $mount
+// 这个已经定义了的 $mount 是适用于运行时环境的 $mount
+
+// 而当前的版本是 compiler 加上 runtime 的完整版,所以在这里，取到这个 './runtime/index' 中已经了的 $mount
+// 然后在下面定义的 $mount 函数的最后执行这个 mount 就可以了
 const mount = Vue.prototype.$mount
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 根据 el 获取其对应的 DOM 元素
   el = el && query(el)
 
   /* istanbul ignore if */

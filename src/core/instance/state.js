@@ -35,7 +35,9 @@ const sharedPropertyDefinition = {
   set: noop
 }
 
+// proxy(vm, `_data`, key)
 export function proxy (target: Object, sourceKey: string, key: string) {
+  // 下面的 this 指向 target
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
   }
@@ -107,13 +109,22 @@ function initProps (vm: Component, propsOptions: Object) {
   observerState.shouldConvert = true
 }
 
+// 初始化我们配置中写的 data 对象，传递的参数（vm）是当前 Vue 的实例
 function initData (vm: Component) {
+  // 取出配置对象中的 data 字段
   let data = vm.$options.data
+  // data 字段有两种写法：（1）函数类型；（2）普通对象类型
+  // 在这一步，还会将 data 赋值给 vm._data
   data = vm._data = typeof data === 'function'
+    // 如果 data 是函数类型的话，借助 getData 函数拿到最终的 data 对象
     ? getData(data, vm)
+    // 否则的话，直接返回 data 对象，如果没有配置 data 的话，就返回后面的 {}
     : data || {}
+  // 如果 data 不是普通的对象（{k:v}）的话
   if (!isPlainObject(data)) {
+    // 将 data 设为 {}
     data = {}
+    // 如果实在开发环境的话，打印出警告
     process.env.NODE_ENV !== 'production' && warn(
       'data functions should return an object:\n' +
       'https://vuejs.org/v2/guide/components.html#data-Must-Be-a-Function',
@@ -121,14 +132,20 @@ function initData (vm: Component) {
     )
   }
   // proxy data on instance
+  // 拿到 data 对象中的 key
   const keys = Object.keys(data)
+  // 拿到我们定义的 props 和 methods
   const props = vm.$options.props
   const methods = vm.$options.methods
+  // 获取 data 中 key 的个数
   let i = keys.length
+  // 遍历 data 中的 key
   while (i--) {
+    // 拿到当前的key
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
       if (methods && hasOwn(methods, key)) {
+        // 如果是在开发模式下，并且我们自定义的 methods 中有和 key 同名的方法时，在这发出警告
         warn(
           `Method "${key}" has already been defined as a data property.`,
           vm
@@ -136,12 +153,17 @@ function initData (vm: Component) {
       }
     }
     if (props && hasOwn(props, key)) {
+      // 如果是在开发模式下，并且 props 有和 key 同名的属性时，在此发出警告
       process.env.NODE_ENV !== 'production' && warn(
         `The data property "${key}" is already declared as a prop. ` +
         `Use prop default value instead.`,
         vm
       )
+      // isReserved 函数用于检查字符串是不是 $ 或者 _ 开头的
+      // 如果不是 $ 和 _ 开头的话
     } else if (!isReserved(key)) {
+      // 将 vm.key 代理到 vm['_data'].key
+      // 也就是说当我们访问 this.message 的时候，实际上值是从 this['_data'].message 中获取到的(假设 data 中有 message 属性)
       proxy(vm, `_data`, key)
     }
   }
@@ -151,6 +173,9 @@ function initData (vm: Component) {
 
 function getData (data: Function, vm: Component): any {
   try {
+    // 使用 call 执行 data 函数，该函数中的 this 指向当前 Vue 的实例，并且第一个参数也是当前 Vue 的实例
+    // 官网的 data 部分：https://cn.vuejs.org/v2/api/#data，中说道：如果函数是一个箭头函数的话，函数中的
+    // this 就不是这个组件的实例了，不过仍然可以通过第一个参数来访问这个组件的实例。底层的原理就在这里。
     return data.call(vm, vm)
   } catch (e) {
     handleError(e, vm, `data()`)
