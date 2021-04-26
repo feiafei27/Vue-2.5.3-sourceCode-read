@@ -1,6 +1,5 @@
 // 该文件用于重写 Array.prototype 对象中一些能够改变数组内容的函数
 
-
 import { def } from '../util/index'
 
 // 拿到 Array 的 prototype 原型对象

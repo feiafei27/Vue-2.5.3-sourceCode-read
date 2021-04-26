@@ -34,6 +34,7 @@ const resolve = p => {
   }
 }
 
+// 不同版本 Vue.js 的配置
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   'web-runtime-cjs': {

@@ -15,11 +15,10 @@ import {
 import type { ISet } from '../util/index'
 
 let uid = 0
-
 /**
- * A watcher parses an expression, collects dependencies,
- * and fires callback when the expression value changes.
- * This is used for both the $watch() api and directives.
+ * Watcher 负责解析表达式以及收集依赖项,
+ * 并在表达式的值改变时触发执行回调.
+ * Watcher 用于 $watch() 接口和指令.
  */
 export default class Watcher {
   vm: Component;
