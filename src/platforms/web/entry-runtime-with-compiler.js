@@ -31,15 +31,18 @@ Vue.prototype.$mount = function (
 
   /* istanbul ignore if */
   if (el === document.body || el === document.documentElement) {
+    // 如果是在开发环境下，并且 el 元素是 <html> 或者 <body> 的话，在此打印出警告
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
     )
     return this
   }
 
+  // 拿到 new Vue() 传递的配置对象
   const options = this.$options
-  // resolve template/el and convert to render function
+  // 判断配置对象中有没有写 render 函数
   if (!options.render) {
+    // 判断配置对象中有没有 template
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
