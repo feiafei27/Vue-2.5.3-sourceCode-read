@@ -57,8 +57,10 @@ export function renderMixin (Vue: Class<Component>) {
     return nextTick(fn, this)
   }
 
+  // Vue 原型上的 _render 函数，它的作用是生成 VNode
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
+    // 拿到当前 Vue 实例的 render 函数，这个 render 函数可以用户自己写，也可以由 Vue 帮助生成
     const { render, _parentVnode } = vm.$options
 
     if (vm._isMounted) {
@@ -80,6 +82,9 @@ export function renderMixin (Vue: Class<Component>) {
     // render self
     let vnode
     try {
+      // 在这里执行 render 函数，生成 vnode
+      // 我们知道 Vue 的 render 函数的第一个参数是一个能够创建 VNode 的函数，
+      // 该特性的底层实现就在这里，render.call 方法的第二个参数 vm.$createElement 就是这个能够创建 VNode 的函数
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)
@@ -110,10 +115,12 @@ export function renderMixin (Vue: Class<Component>) {
           vm
         )
       }
+      // 如果生成 vnode 失败的话，赋值一个空的 VNode 给 vnode 变量
       vnode = createEmptyVNode()
     }
     // set parent
     vnode.parent = _parentVnode
+    // 返回生成的 vnode。所谓的 vnode 也就是一个普通的对象，只不过这个对象能够描述出一个真实的 DOM 节点
     return vnode
   }
 }

@@ -40,7 +40,9 @@ Vue.prototype.$mount = function (
 
   // 拿到 new Vue() 传递的配置对象
   const options = this.$options
-  // 判断配置对象中有没有写 render 函数
+  // 判断配置对象中有没有写 render 函数，如果没有定义 render 的话，接下来会根据提供的 template 或者 el
+  // 生成 render 函数，并赋值给 options
+  // 也就是说：最终 Vue 只认 render 函数，如果用户定义了 render 函数的话，那就直接使用，如果没有定义的话，Vue 会为其生成
   if (!options.render) {
     // 判断配置对象中有没有 template
     let template = options.template
@@ -65,6 +67,7 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // 如果 template 是一个 DOM 节点的话，使用 innerHTML 属性获取该 DOM 节点的字符串形式
       template = getOuterHTML(el)
     }
     if (template) {
@@ -88,6 +91,9 @@ Vue.prototype.$mount = function (
       }
     }
   }
+  // 在确保 options 中有 render 函数之后，就开始执行 runtime 中挂载的 $mount 进行渲染
+  // 也就是说：（1）entry-runtime-with-compiler 中的 $mount 负责编译的工作，最终的处理结果就是 options 中一定会有用于渲染的 rener 函数
+  //          （2）而 runtime 中的 $mount 函数则负责根据生成的 render 函数进行页面的渲染
   return mount.call(this, el, hydrating)
 }
 

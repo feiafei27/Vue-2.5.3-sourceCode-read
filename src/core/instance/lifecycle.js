@@ -145,9 +145,13 @@ export function mountComponent (
   el: ?Element,
   hydrating?: boolean
 ): Component {
+  // 将 el 设值到 vm 中的 $el
   vm.$el = el
+  // 如果 $options 没有 render 函数的话
   if (!vm.$options.render) {
+    // 在这里给 render 属性设置一个创建空 VNode 的函数
     vm.$options.render = createEmptyVNode
+    // 并且如果是非生产环境的话，还会给出警告
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
       if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
@@ -165,10 +169,15 @@ export function mountComponent (
         )
       }
     }
+    // 在这里做一些简单地校验
   }
+
+  // 触发执行 beforeMount 生命周期函数
   callHook(vm, 'beforeMount')
 
+  // 一个更新渲染组件的方法
   let updateComponent
+  // 下面根据不同的走向，给 updateComponent 赋值不同的函数
   /* istanbul ignore if */
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
     updateComponent = () => {
@@ -189,10 +198,12 @@ export function mountComponent (
     }
   } else {
     updateComponent = () => {
+      // vm._render() 函数的执行结果是一个 VNode
       vm._update(vm._render(), hydrating)
     }
   }
 
+  // 这里的 Watcher 实例是一个渲染 Watcher
   vm._watcher = new Watcher(vm, updateComponent, noop)
   hydrating = false
 
