@@ -98,6 +98,7 @@ export function _createElement (
     children.length = 0
   }
   // 根据不同的标准化类型，去标准化 children
+  // normalize 的作用是将 children 转变成一维的 VNode
   if (normalizationType === ALWAYS_NORMALIZE) {
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {

@@ -47,6 +47,8 @@ export function initLifecycle (vm: Component) {
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {
+  // _update 方法的作用是将 VNode 映射成真实的 DOM
+  // 调用的时机有两个：（1）刚渲染时；（2）依赖的数据更新时
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     if (vm._isMounted) {
