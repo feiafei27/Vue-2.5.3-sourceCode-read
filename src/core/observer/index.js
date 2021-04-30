@@ -47,7 +47,7 @@ export class Observer {
   vmCount: number;
 
   constructor (value: any) {
-    // 将被转换的值保存到 this.value 中
+    // 将要被转换成响应式的数据保存到 this.value 中
     this.value = value
     // 如果当前的 value 是一个数组类型的话，那么这个 dep 将被用于保存这个数组的依赖
     this.dep = new Dep()
@@ -256,20 +256,26 @@ export function defineReactive (
 }
 
 /**
- * Set a property on an object. Adds the new property and
- * triggers change notification if the property doesn't
- * already exist.
+ * vm.$set 的底层实现
  */
 export function set (target: Array<any> | Object, key: any, val: any): any {
+  // 如果 target 是一个数组，并且 key 也是一个有效的数组索引值的话
   if (Array.isArray(target) && isValidArrayIndex(key)) {
+    // 设置数组的 length 属性，设置的属性值是 "数组原长度" 和 "key" 中的最大值
     target.length = Math.max(target.length, key)
+    // 然后通过数组原型上的方法，将 val 添加到数组中
+    // 在前面数组响应式源码的阅读中可以知道，通过数组原型的方法添加的元素，其是会被转换成响应式的
     target.splice(key, 1, val)
     return val
   }
+  // 这里用于处理 key 已经存在于 target 中的情况
   if (hasOwn(target, key)) {
+    // 由于这个 key 已经存在于对象中了，也就是说这个 key 已经被侦测了变化，在这里，只不过是修改下属性而已
+    // 所以在这里，直接修改属性，并返回 val 即可
     target[key] = val
     return val
   }
+  // 下面的代码用于处理对象新增属性的情况
   const ob = (target: any).__ob__
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
@@ -278,10 +284,13 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+  // 如果 target 没有 __ob__ 属性的话，说明 target 并不是一个响应式的对象
+  // 所以在这里也不需要做什么额外的处理，将 val 设到 target 上，并且返回这个 val 即可
   if (!ob) {
     target[key] = val
     return val
   }
+  // 如果上面
   defineReactive(ob.value, key, val)
   ob.dep.notify()
   return val
