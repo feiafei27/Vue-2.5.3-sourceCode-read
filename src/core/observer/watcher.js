@@ -67,9 +67,13 @@ export default class Watcher {
       ? expOrFn.toString()
       : ''
     // parse expression for getter
+    // getter 属性必须是一个函数，并且函数中有对使用到的值的读取操作（用于触发数据的 getter）
     if (typeof expOrFn === 'function') {
+      // 如果 expOrFn 是一个函数类型的话，直接将它赋值给 this.getter 即可
       this.getter = expOrFn
     } else {
+      // 而如果是一个字符串类型的话，例如："a.b.c.d"，是一个数据的路径
+      // 就将 parsePath(expOrFn) 赋值给 this.getter，parsePath 能够读取这个路径字符串对应的数据（一样能触发 getter）
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = function () {}
@@ -83,6 +87,7 @@ export default class Watcher {
     }
     this.value = this.lazy
       ? undefined
+      // 调用 get() 函数，
       : this.get()
   }
 
@@ -90,10 +95,13 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    // 将自身赋值到 Dep.target 这个静态属性上，保证调用数据的 Dep 实例能够拿到这个 Watcher 实例，进行依赖的收集
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      // 执行 getter 函数，该函数执行时，会对响应式的数据进行读取操作，这个读取操作能够触发数据的 getter，
+      // 在 getter 中会将 Dep.target 这个 Watcher 实例存储到该数据的 Dep 数组中，以此就完成了依赖的收集
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {

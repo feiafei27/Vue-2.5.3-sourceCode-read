@@ -290,8 +290,10 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     target[key] = val
     return val
   }
-  // 如果上面
+  // 如果上面所有的判断条件都不满足的话，说明用户是在响应式数据上新增了一个数据，这种情况需要跟踪这个新增属性的变化
+  // 在这里使用 defineReactive 将 val 变成 getter/setter 的形式
   defineReactive(ob.value, key, val)
+  // 因为新增了一个属性，所以 ob.value 变化了，所以在这里需要出发依赖的更新
   ob.dep.notify()
   return val
 }
@@ -299,8 +301,12 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
 /**
  * Delete a property and trigger change if necessary.
  */
+// Vue 对数据的监控是通过 Object.defineProperty() 实现的，所以当用户通过 delete 关键字删除某个字段时，Vue 是检测不到的，
+// 为了解决这个问题，Vue 提供了 vm.$delete 来解决这个问题
 export function del (target: Array<any> | Object, key: any) {
+  // 如果 target 是一个数组，并且 key 是一个下标值的话
   if (Array.isArray(target) && isValidArrayIndex(key)) {
+    // 执行数组原型上的 splice 方法，该方法会执行删除的操作，并且会出发依赖的更新
     target.splice(key, 1)
     return
   }
@@ -312,13 +318,17 @@ export function del (target: Array<any> | Object, key: any) {
     )
     return
   }
+  // 如果 target 上面没有 key 属性的话，直接 return 即可，什么都不用干
   if (!hasOwn(target, key)) {
     return
   }
+  // 使用 js 中原生的 delete 关键字删除指定的 key
   delete target[key]
+  // 在这里判断 target 是不是响应式的，如果不是的话，就不用出发依赖的更新操作了。在这里，直接 return
   if (!ob) {
     return
   }
+  // 出发依赖的更新操作
   ob.dep.notify()
 }
 

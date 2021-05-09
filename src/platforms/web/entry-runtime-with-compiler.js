@@ -70,6 +70,8 @@ Vue.prototype.$mount = function (
       // 如果 template 是一个 DOM 节点的话，使用 innerHTML 属性获取该 DOM 节点的字符串形式
       template = getOuterHTML(el)
     }
+
+    // 到这里，我们获取到了 template
     if (template) {
       /* istanbul ignore if */
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
@@ -92,7 +94,7 @@ Vue.prototype.$mount = function (
     }
   }
   // 在确保 options 中有 render 函数之后，就开始执行 runtime 中挂载的 $mount 进行渲染
-  // 也就是说：（1）entry-runtime-with-compiler 中的 $mount 负责编译的工作，最终的处理结果就是 options 中一定会有用于渲染的 rener 函数
+  // 也就是说：（1）entry-runtime-with-compiler 中的 $mount 负责编译的工作，最终的处理结果就是 options 中一定会有用于渲染的 render 函数
   //          （2）而 runtime 中的 $mount 函数则负责根据生成的 render 函数进行页面的渲染
   return mount.call(this, el, hydrating)
 }

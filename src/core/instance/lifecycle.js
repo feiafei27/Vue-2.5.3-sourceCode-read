@@ -201,11 +201,12 @@ export function mountComponent (
   } else {
     updateComponent = () => {
       // vm._render() 函数的执行结果是一个 VNode
+      // vm._update() 函数执行虚拟 DOM 的 patch 方法来执行节点的比对与渲染操作
       vm._update(vm._render(), hydrating)
     }
   }
 
-  // 这里的 Watcher 实例是一个渲染 Watcher
+  // 这里的 Watcher 实例是一个渲染 Watcher，组件级别的
   vm._watcher = new Watcher(vm, updateComponent, noop)
   hydrating = false
 

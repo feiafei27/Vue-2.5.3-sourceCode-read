@@ -116,7 +116,7 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
   }
   return options
 }
-
+ 
 function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
   let modified
   const latest = Ctor.options
