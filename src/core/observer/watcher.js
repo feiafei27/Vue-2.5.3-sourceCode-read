@@ -136,6 +136,7 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
+      // 用于将父级组件的渲染 watcher 赋值到 Dep.target 上面
       popTarget()
       this.cleanupDeps()
     }
@@ -147,6 +148,9 @@ export default class Watcher {
    * 进行依赖的添加操作，这种操作是双向的，即：
    * （1）dep 实例会添加当前的 watcher 实例
    * （2）当前的 watcher 实例也会将这个 dep 保存到 newDeps 数组中
+   */
+  /**
+   *
    */
   addDep (dep: Dep) {
     const id = dep.id

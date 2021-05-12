@@ -61,9 +61,27 @@ export default class Dep {
   }
 }
 
+/**
+ * 解读下面源码前的须知：
+ * （1）在 Vue 中，Watcher 的监控级别是组件；
+ * （2）每一个组件都对应着一个渲染 Watcher；
+ */
+
+/**
+ * 在开发中，我们的页面结构是一个组件嵌套另一个组件，众多组件结合在一起形成了完整的应用。
+ * 并且每一个渲染 Watcher 都对应着一个组件。
+ *
+ * 在处理父组件的时候，Vue 将父组件的渲染 watcher 赋值到 Dep.target 上。
+ * 然后轮到处理嵌套的子组件的时候，Vue 会将父组件的渲染 watcher 放到 targetStack 栈中，将子组件的渲染 watcher 赋值到 Dep.target 上。
+ * 子组件处理完毕之后，会执行 popTarget 操作，将保存在 targetStack 栈中的父组件的渲染 watcher 拿出来并赋值到 Dep.target 上。
+ * 这样处理的话，Dep.target 就会一直保存当前正在处理的组件的 watcher 实例。
+ *
+ * 这里对栈数据结构的使用很值得我们借鉴和学习
+ */
+
 // 先将 Dep.target 的内容设置为 null
 Dep.target = null
-// 该数组起到缓存 Watcher 的作用
+// 存储 Watcher 实例的栈
 const targetStack = []
 
 // 该函数用于将 Watcher 实例设置给 Dep.target

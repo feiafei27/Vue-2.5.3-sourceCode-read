@@ -54,6 +54,8 @@ export class Observer {
     // 现将 vmCount 的值设为 0
     this.vmCount = 0
     // 将当前类的实例设到被转换数据的 __ob__ 属性上
+    // 通过 def 函数进行属性的定义，该属性的 enumerable 特性是 false，
+    // 也就是说，walk 方法中的 Object.keys() 是拿不到 __ob__ 这个 key 的，因为 value 的这个属性（__ob__）是不需要变成响应式的
     def(value, '__ob__', this)
     // 判断当前被转换的值是不是数组类型
     // 数组类型和对象类型有不同的转换方法
@@ -208,6 +210,7 @@ export function defineReactive (
   Object.defineProperty(obj, key, {
     enumerable: true,
     configurable: true,
+    // 在此进行依赖收集
     get: function reactiveGetter () {
       // 触发执行上面拿到的 getter
       const value = getter ? getter.call(obj) : val
@@ -229,6 +232,7 @@ export function defineReactive (
       // getter 返回值
       return value
     },
+    // 在此进行派发更新
     set: function reactiveSetter (newVal) {
       // 拿到旧的 value
       const value = getter ? getter.call(obj) : val
