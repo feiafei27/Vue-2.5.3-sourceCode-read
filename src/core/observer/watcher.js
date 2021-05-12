@@ -76,6 +76,9 @@ export default class Watcher {
     // 在这里使用 set 保存 deps 数组中 dep 实例的 id
     this.depIds = new Set()
     this.newDepIds = new Set()
+    // 借助上面的四个变量，Vue想要实现的效果是：每次页面渲染，watcher 实例的 deps 数组都保存最新的依赖 dep 集合，不会保存页面已经不依赖了的数据的 dep
+    // 同时页面已经不使用了的数据的 dep 实例也不会保存当前组件的渲染 watcher（防止不使用数据的变化触发页面的重新渲染，这是无用的、浪费性能的行为）
+
     this.expression = process.env.NODE_ENV !== 'production'
       // 在非生产环境下，将 expOrFn 转换成字符串保存到 this.expression
       ? expOrFn.toString()
@@ -123,6 +126,7 @@ export default class Watcher {
     try {
       // 执行 getter 函数，该函数执行时，会对响应式的数据进行读取操作，这个读取操作能够触发数据的 getter，
       // 在 getter 中会将 Dep.target 这个 Watcher 实例存储到该数据的 Dep 实例中，以此就完成了依赖的收集
+      // 依赖收集需要执行 addDep() 方法完成
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -138,6 +142,8 @@ export default class Watcher {
       }
       // 用于将父级组件的渲染 watcher 赋值到 Dep.target 上面
       popTarget()
+      // cleanupDeps 函数用于将：在旧的dep集中存在，而在新的dep集中不存在的 dep 进行移除该依赖的操作；
+      // 并且更新 deps 和 depIds 保存最新渲染的最新的 dep 集，并清空 newDeps 和 newDepIds；
       this.cleanupDeps()
     }
     // 将 expOrFn 对应的值返回出去
@@ -148,15 +154,40 @@ export default class Watcher {
    * 进行依赖的添加操作，这种操作是双向的，即：
    * （1）dep 实例会添加当前的 watcher 实例
    * （2）当前的 watcher 实例也会将这个 dep 保存到 newDeps 数组中
-   */
-  /**
    *
+   * newDepIds 和 newDeps：保存当前渲染，页面使用的最新数据的 dep 集
+   * depIds 和 deps：保存上一次渲染，页面使用数据的 dep 集
+   *
+   * 有下面3种情况：
+   * （1）某些 dep 新的 dep 集中存在，而在旧的 dep 集中不存在(8~10)；
+   * （2）某些 dep 在新旧 dep 集中都存在(2~7)；
+   * （3）某些 dep 在旧的 dep 集中存在，而在新的 dep 集不存在(1)；
+   * 可以使用下面的图生动的诠释：
+   *
+   *         旧的dep集         新的dep集
+   *  dep1       I
+   *  ---------------------------------------
+   *  dep2       I                I
+   *  dep3       I                I
+   *  dep4       I                I
+   *  dep5       I                I
+   *  dep6       I                I
+   *  dep7       I                I
+   *  ---------------------------------------
+   *  dep8                        I
+   *  dep9                        I
+   *  dep10                       I
+   *
+   * （1）和（3）的差异需要在 addDep 函数和 cleanupDeps 函数中进行处理，保证 deps 和 depIds 保存着最新的 dep 集，依赖的收集也是最新的。
    */
   addDep (dep: Dep) {
     const id = dep.id
+    // 通过 if (!this.newDepIds.has(id)) 防止同一 dep 重复进入里面的逻辑
+    // 进入 if 代码块中的，每一次都是不同的 dep
     if (!this.newDepIds.has(id)) {
       this.newDepIds.add(id)
       this.newDeps.push(dep)
+      // 如果某一个新添加的 dep 在旧的 dep 集中不存在的话，在这里需要进行新依赖的收集（消除第一种情况的差异）
       if (!this.depIds.has(id)) {
         dep.addSub(this)
       }
@@ -164,17 +195,22 @@ export default class Watcher {
   }
 
   /**
-   * 清空已经收集的依赖
+   * cleanupDeps 函数用于将：在旧的dep集中存在，而在新的dep集中不存在的 dep 进行移除该依赖的操作；
+   * 并且更新 deps 和 depIds 保存最新渲染的最新的 dep 集，并清空 newDeps 和 newDepIds；
    */
   cleanupDeps () {
     let i = this.deps.length
+    // 对旧的 dep 集进行遍历操作
     while (i--) {
-      // 对当前 watcher 实例的 dep 实例的数组进行遍历
       const dep = this.deps[i]
+      // 如果旧的dep集中存在新的dep集不存在的dep，说明这个最新渲染的视图用不到这个 dep 所对应的数据，所以需要进行移除依赖的操作
       if (!this.newDepIds.has(dep.id)) {
+        // 移除当前 watcher 对该 dep 的监控
         dep.removeSub(this)
       }
     }
+
+    // 更新 deps 和 depIds 保存最新渲染的最新的 dep 集，并清空 newDeps 和 newDepIds；
     let tmp = this.depIds
     this.depIds = this.newDepIds
     this.newDepIds = tmp
@@ -196,6 +232,7 @@ export default class Watcher {
     } else if (this.sync) {
       this.run()
     } else {
+      // 如果当前的 watcher 实例不是立即触发的话，需要将当前的 watcher 实例添加到 watcher 缓存数组中
       queueWatcher(this)
     }
   }
@@ -241,7 +278,7 @@ export default class Watcher {
   }
 
   /**
-   * Depend on all deps collected by this watcher.
+   * 作用：让当前 watcher 所依赖数据的 dep 保存 Dep.target 这个 Watcher 实例
    */
   depend () {
     let i = this.deps.length
@@ -251,7 +288,7 @@ export default class Watcher {
   }
 
   /**
-   * Remove self from all dependencies' subscriber list.
+   * 用于将当前的 watcher 实例从依赖的所有数据的 dep 实例中移除，卸载操作。
    */
   teardown () {
     if (this.active) {

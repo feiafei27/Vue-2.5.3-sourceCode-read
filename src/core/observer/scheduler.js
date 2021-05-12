@@ -120,11 +120,12 @@ function callActivatedHooks (queue) {
 }
 
 /**
- * Push a watcher into the watcher queue.
- * Jobs with duplicate IDs will be skipped unless it's
- * pushed when the queue is being flushed.
+ * 添加一个 watcher 实例到 watcher 队列中
+ * 如果某一个 watcher 已经被保存到队列中的话，将不会再进行 push 操作。（一个渲染 watcher 有可能监控
+ * 多个数据，每个数据的改变都会使代码执行到这里，但其实只需要保存一次该渲染 watcher 即可）
  */
 export function queueWatcher (watcher: Watcher) {
+  // 根据 watcher 的 id 判断这个 watcher 实例有没有保存到队列中，只有没有被缓存的 watcher 实例才会进行接下来的操作
   const id = watcher.id
   if (has[id] == null) {
     has[id] = true

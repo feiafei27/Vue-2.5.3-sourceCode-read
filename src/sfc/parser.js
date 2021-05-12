@@ -18,8 +18,8 @@ type Attribute = {
  */
 export function parseComponent (
   content: string,
-  options?: Object = {}
- ): SFCDescriptor {
+  options?: Object
+): SFCDescriptor {
   const sfc: SFCDescriptor = {
     template: null,
     script: null,
