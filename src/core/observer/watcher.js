@@ -222,8 +222,7 @@ export default class Watcher {
   }
 
   /**
-   * Subscriber interface.
-   * Will be called when a dependency changes.
+   * 如果 watcher 实例依赖的数据改变的话，update 方法将被执行
    */
   update () {
     /* istanbul ignore else */

@@ -21,7 +21,11 @@ let flushing = false
 let index = 0
 
 /**
- * Reset the scheduler's state.
+ * watcher 实例统一调度程序
+ */
+
+/**
+ * 重置调度程序的状态（就是将上面的功能变量设为初始状态）
  */
 function resetSchedulerState () {
   index = queue.length = activatedChildren.length = 0
@@ -33,7 +37,7 @@ function resetSchedulerState () {
 }
 
 /**
- * Flush both queues and run the watchers.
+ * 执行队列中 watcher 实例的 run 方法
  */
 function flushSchedulerQueue () {
   flushing = true
@@ -53,6 +57,7 @@ function flushSchedulerQueue () {
     id = watcher.id
     // 将 map 中，当前 watcher 的 id 置空
     has[id] = null
+    // 核心：执行 watcher 实例的 run 方法
     watcher.run()
     // in dev build, check and stop circular updates.
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
@@ -75,6 +80,7 @@ function flushSchedulerQueue () {
   const activatedQueue = activatedChildren.slice()
   const updatedQueue = queue.slice()
 
+  // 重置调度程序的状态
   resetSchedulerState()
 
   // call component updated and activated hooks
