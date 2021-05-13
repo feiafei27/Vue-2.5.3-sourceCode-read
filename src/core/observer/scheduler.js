@@ -39,21 +39,19 @@ function flushSchedulerQueue () {
   flushing = true
   let watcher, id
 
-  // Sort queue before flush.
-  // This ensures that:
-  // 1. Components are updated from parent to child. (because parent is always
-  //    created before the child)
-  // 2. A component's user watchers are run before its render watcher (because
-  //    user watchers are created before the render watcher)
-  // 3. If a component is destroyed during a parent component's watcher run,
-  //    its watchers can be skipped.
+  // 刷新前对队列排序。
+  // 这可确保：
+  //  1. 组件从父级更新到子级(因为父级组件总是在子组件之前创建）。
+  //  2. 组件的自定义 watcher 在组件的渲染 watcher 之前运行（因为自定义 watcher 在渲染 watcher 之前创建）。
+  //  3. 如果在父组件的渲染 watcher 运行期间，子组件被销毁，该子组件的 watcher 会被跳过。
   queue.sort((a, b) => a.id - b.id)
 
-  // do not cache length because more watchers might be pushed
-  // as we run existing watchers
+  // 不要使用变量固定缓存当前状态 watcher 队列的长度，，因为新的 watcher 有可能随时被 push 到队列中
+  // 遍历触发执行队列中的 watcher 实例
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
     id = watcher.id
+    // 将 map 中，当前 watcher 的 id 置空
     has[id] = null
     watcher.run()
     // in dev build, check and stop circular updates.
@@ -124,23 +122,29 @@ function callActivatedHooks (queue) {
  * 如果某一个 watcher 已经被保存到队列中的话，将不会再进行 push 操作。（一个渲染 watcher 有可能监控
  * 多个数据，每个数据的改变都会使代码执行到这里，但其实只需要保存一次该渲染 watcher 即可）
  */
+/**
+ * 该函数借助 flushing 和 waiting 变量实现流程的控制
+ */
 export function queueWatcher (watcher: Watcher) {
   // 根据 watcher 的 id 判断这个 watcher 实例有没有保存到队列中，只有没有被缓存的 watcher 实例才会进行接下来的操作
   const id = watcher.id
   if (has[id] == null) {
     has[id] = true
+    // 如果当前的队列不是刷新状态的话
     if (!flushing) {
+      // 直接将 watcher push 到队列中即可
       queue.push(watcher)
     } else {
-      // if already flushing, splice the watcher based on its id
-      // if already past its id, it will be run next immediately.
+      // 如果当前正在进行刷新 watcher 队列，此时需要将当前的 watcher 插入到队列中合适的位置（按照 watcher 的 id 从小到大排列）
       let i = queue.length - 1
       while (i > index && queue[i].id > watcher.id) {
         i--
       }
       queue.splice(i + 1, 0, watcher)
     }
-    // queue the flush
+    // 如果当前不是等待状态的话，将 waiting 设为 true，在下一个 tick 执行清空并更新 watcher 的操作
+    // 借助 waiting 变量控制 watcher 队列的清空执行，在同一时刻，只能有一个 flushSchedulerQueue 正在等待（下一个 tick）执行或者正在执行
+    // 只有当前时刻，没有 flushSchedulerQueue 正在等待执行或者正在执行，才会执行 nextTick(flushSchedulerQueue)
     if (!waiting) {
       waiting = true
       nextTick(flushSchedulerQueue)

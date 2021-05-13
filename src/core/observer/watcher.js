@@ -256,12 +256,14 @@ export default class Watcher {
         const oldValue = this.value
         this.value = value
         if (this.user) {
+          // 当前的 watcher 是用户自定义 watcher
           try {
             this.cb.call(this.vm, value, oldValue)
           } catch (e) {
             handleError(e, this.vm, `callback for watcher "${this.expression}"`)
           }
         } else {
+          // 当前的 watcher 是组件的渲染 watcher
           this.cb.call(this.vm, value, oldValue)
         }
       }
