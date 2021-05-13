@@ -26,6 +26,7 @@ export default class Watcher {
   cb: Function;
   id: number;
   deep: boolean;
+  // 该字段用于标识当前的 watcher 实例，是用户自定义的 watcher，还是组件的渲染 watcher
   user: boolean;
   lazy: boolean;
   sync: boolean;
@@ -243,6 +244,7 @@ export default class Watcher {
   run () {
     if (this.active) {
       const value = this.get()
+      // 下面进行回调函数 cb 的处理
       if (
         value !== this.value ||
         // Deep watchers and watchers on Object/Arrays should fire even

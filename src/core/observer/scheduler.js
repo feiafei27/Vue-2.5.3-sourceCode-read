@@ -59,7 +59,16 @@ function flushSchedulerQueue () {
     has[id] = null
     // 核心：执行 watcher 实例的 run 方法
     watcher.run()
-    // in dev build, check and stop circular updates.
+    // 非生产环境下，检测有没有循环更新的问题，如果有的话，发出警报
+    // 那么什么情况下，会出现这种问题呢？看下面的例子代码，就会出现这种警告。
+    // data: {
+    //   msg: 'Hello World'
+    // }
+    // watch: {
+    //   msg() {
+    //     this.msg = Math.random()
+    //   }
+    // }
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
       circular[id] = (circular[id] || 0) + 1
       if (circular[id] > MAX_UPDATE_COUNT) {
@@ -83,7 +92,7 @@ function flushSchedulerQueue () {
   // 重置调度程序的状态
   resetSchedulerState()
 
-  // call component updated and activated hooks
+  // 触发执行组件的 updated 和 activated 钩子函数
   callActivatedHooks(activatedQueue)
   callUpdatedHooks(updatedQueue)
 
