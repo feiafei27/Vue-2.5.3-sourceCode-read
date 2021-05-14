@@ -279,7 +279,8 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     target[key] = val
     return val
   }
-  // 下面的代码用于处理对象新增属性的情况
+
+  // 判断 target 是不是一个 Vue 的实例，或者 根data，如果是的话，发出警报，并 return
   const ob = (target: any).__ob__
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
@@ -288,6 +289,7 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+
   // 如果 target 没有 __ob__ 属性的话，说明 target 并不是一个响应式的对象
   // 所以在这里也不需要做什么额外的处理，将 val 设到 target 上，并且返回这个 val 即可
   if (!ob) {
