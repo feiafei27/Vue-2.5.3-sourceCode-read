@@ -94,6 +94,7 @@ const componentVNodeHooks = {
   }
 }
 
+// [ 'init', 'prepatch', 'insert', 'destroy' ]
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
 // 用于将组件转换成 VNode
@@ -108,15 +109,22 @@ export function createComponent (
     return
   }
 
+  // 获取 vm.$options._base
+  // 在 global-api/index.js 中，有这么一行代码：Vue.options._base = Vue
+  // 然后在 vm 初始化的过程中，Vue.options 会和 vm 的 options 进行合并
+  // 所以在这里：baseCtor = Vue 这个构造函数
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
+  // 如果 Ctor 是一个 对象类型的话
   if (isObject(Ctor)) {
+    // 借助 Vue.extend（Vue.extend 的具体用法可以看官网的api）将 Ctor 对象转换成 Vue 构造器的子类
     Ctor = baseCtor.extend(Ctor)
   }
 
   // if at this stage it's not a constructor or an async component factory,
   // reject.
+  // 如果代码执行到这里，Ctor 不是一个组件的构造函数，不是一个异步的组件工厂方法的话，在下面打印出警告
   if (typeof Ctor !== 'function') {
     if (process.env.NODE_ENV !== 'production') {
       warn(`Invalid Component definition: ${String(Ctor)}`, context)
@@ -124,7 +132,7 @@ export function createComponent (
     return
   }
 
-  // async component
+  // 异步组件的处理
   let asyncFactory
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
@@ -145,11 +153,10 @@ export function createComponent (
 
   data = data || {}
 
-  // resolve constructor options in case global mixins are applied after
-  // component constructor creation
+  // 对 options 再做一些处理，因为有可能被全局的 mixins 所影响
   resolveConstructorOptions(Ctor)
 
-  // transform component v-model data into props & events
+  // 对组件 v-model 的处理
   if (isDef(data.model)) {
     transformModel(Ctor.options, data)
   }
@@ -157,13 +164,14 @@ export function createComponent (
   // extract props
   const propsData = extractPropsFromVNodeData(data, Ctor, tag)
 
-  // functional component
+  // 对函数式组件的处理
   if (isTrue(Ctor.options.functional)) {
     return createFunctionalComponent(Ctor, propsData, data, context, children)
   }
 
   // extract listeners, since these needs to be treated as
   // child component listeners instead of DOM listeners
+  // 组件自定义事件的处理
   const listeners = data.on
   // replace with listeners with .native modifier
   // so it gets processed during parent component patch.
@@ -181,17 +189,25 @@ export function createComponent (
     }
   }
 
-  // merge component management hooks onto the placeholder node
+  // 安装组件的钩子函数
   mergeHooks(data)
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
+  // 借助 VNode 类创建 vnode，并返回
   const vnode = new VNode(
+    // 组件 VNode 的 tag 以 'vue-component-' 开头，这是很重要的标识
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
-    data, undefined, undefined, undefined, context,
+    data,
+    // 组件 VNode 的 children、text 和 elm 都是空
+    undefined, undefined, undefined,
+    context,
+    // 创建组件 VNode 时，参数是通过 componentOptions 来传递的
+    // 包括 children，组件的 children 在插槽的功能中会用到
     { Ctor, propsData, listeners, tag, children },
     asyncFactory
   )
+
   return vnode
 }
 
@@ -222,18 +238,25 @@ export function createComponentInstanceForVnode (
   return new vnodeComponentOptions.Ctor(options)
 }
 
+// 将 componentVNodeHooks 中的钩子函数合并到 data.hook
 function mergeHooks (data: VNodeData) {
   if (!data.hook) {
     data.hook = {}
   }
+  // hooksToMerge = [ 'init', 'prepatch', 'insert', 'destroy' ]
+  // 遍历 componentVNodeHooks 中的钩子函数的 keys
   for (let i = 0; i < hooksToMerge.length; i++) {
     const key = hooksToMerge[i]
+    // 拿到用户自定义的钩子函数和componentVNodeHooks中的构造函数
     const fromParent = data.hook[key]
     const ours = componentVNodeHooks[key]
+    // 对两种构造函数进行合并
     data.hook[key] = fromParent ? mergeHook(ours, fromParent) : ours
   }
 }
 
+// 对两个同种的构造函数进行合并
+// 合并的方式也很简单，然后一个包装函数，在包装函数中一次执行这两个钩子函数
 function mergeHook (one: Function, two: Function): Function {
   return function (a, b, c, d) {
     one(a, b, c, d)

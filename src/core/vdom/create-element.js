@@ -26,7 +26,7 @@ const ALWAYS_NORMALIZE = 2
 
 // 创建 VNode 的方法
 export function createElement (
-  // vm 实例
+  // vm 实例，上下文
   context: Component,
   // 元素标签
   tag: any,
@@ -48,6 +48,7 @@ export function createElement (
   if (isTrue(alwaysNormalize)) {
     normalizationType = ALWAYS_NORMALIZE
   }
+  // 上面代码的作用是：将参数标准化
   // 将参数进行标准化之后，执行 _createElement 方法生成 VNode
   return _createElement(context, tag, data, children, normalizationType)
 }
@@ -127,7 +128,7 @@ export function _createElement (
       )
     }
   } else {
-    // direct component options / constructor
+    // 如果 tags 不是字符串类型的话，说明当前处理的是组件标签
     vnode = createComponent(tag, data, context, children)
   }
   if (isDef(vnode)) {
