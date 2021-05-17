@@ -1415,8 +1415,7 @@ function checkComponents (options) {
 }
 
 /**
- * Ensure all props option syntax are normalized into the
- * Object-based format.
+ * 标准化 options 中的 props 配置
  */
 function normalizeProps (options, vm) {
   var props = options.props;
@@ -4524,7 +4523,6 @@ var uid$1 = 0;
 
 function initMixin (Vue) {
   Vue.prototype._init = function (options) {
-    debugger
     var vm = this;
     // a uid
     vm._uid = uid$1++;

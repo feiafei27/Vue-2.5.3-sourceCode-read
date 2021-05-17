@@ -290,14 +290,15 @@ function checkComponents (options: Object) {
 }
 
 /**
- * Ensure all props option syntax are normalized into the
- * Object-based format.
+ * 对 Props 进行标准化
  */
 function normalizeProps (options: Object, vm: ?Component) {
   const props = options.props
+  // 如果当前的 options 没有配置 props 的话，直接 return 即可
   if (!props) return
   const res = {}
   let i, val, name
+  // props 可以配置成 ['xxx', 'xxx2', 'xxx3'] 这种形式
   if (Array.isArray(props)) {
     i = props.length
     while (i--) {
