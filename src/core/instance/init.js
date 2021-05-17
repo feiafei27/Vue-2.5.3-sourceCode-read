@@ -40,7 +40,9 @@ export function initMixin (Vue: Class<Component>) {
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+      // 合并 options
       vm.$options = mergeOptions(
+        // 这里实际传入的是 Vue 的 options
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
@@ -116,7 +118,7 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
   }
   return options
 }
- 
+
 function resolveModifiedOptions (Ctor: Class<Component>): ?Object {
   let modified
   const latest = Ctor.options

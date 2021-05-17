@@ -110,6 +110,7 @@ export function mergeDataOrFn (
   }
 }
 
+// data 的合并策略
 strats.data = function (
   parentVal: any,
   childVal: any,
@@ -139,15 +140,37 @@ function mergeHook (
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
 ): ?Array<Function> {
+  // 嵌套的三元运算符
+  // 如果 childVal 没有定义的话，直接返回 parentVal
   return childVal
+    // childVal 是定义了的，接下来看 parentVal 是否定义
     ? parentVal
+      // parentVal 定义了的话，使用 concat 函数连接两者，concat 函数的参数既能是数组，也能是单个的元素
       ? parentVal.concat(childVal)
+      // childVal 定义了，而 parentVal 没有定义，此时只要返回 childVal 即可
+      // 不过要看 childVal 是否是数组类型。如果是的话，直接返回，不是的话，包装成数组再返回
       : Array.isArray(childVal)
         ? childVal
         : [childVal]
     : parentVal
+  // 这种返回结果由两种变量决定，每个变量各有两种变化，共有四种组合的情形可以使用三元运算符简洁的实现
+  // 很值得我们借鉴和学习
 }
 
+// 生命周期函数的合并策略
+// const LIFECYCLE_HOOKS = [
+//   'beforeCreate',
+//   'created',
+//   'beforeMount',
+//   'mounted',
+//   'beforeUpdate',
+//   'updated',
+//   'beforeDestroy',
+//   'destroyed',
+//   'activated',
+//   'deactivated',
+//   'errorCaptured'
+// ]
 LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook
 })
