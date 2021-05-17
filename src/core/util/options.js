@@ -25,6 +25,9 @@ import {
  * how to merge a parent option value and a child option
  * value into the final value.
  */
+/**
+ * option 的合并策略
+ */
 const strats = config.optionMergeStrategies
 
 /**
@@ -235,20 +238,25 @@ strats.computed = function (
 strats.provide = mergeDataOrFn
 
 /**
- * Default strategy.
+ * 最基础的 options 合并策略
  */
 const defaultStrat = function (parentVal: any, childVal: any): any {
+  // 如果 childVal 未定义的话，返回 parentVal
   return childVal === undefined
     ? parentVal
     : childVal
 }
 
 /**
- * Validate component names
+ * 验证组件名称
  */
 function checkComponents (options: Object) {
+  // 对配置对象的 components 字段进行遍历
   for (const key in options.components) {
     const lower = key.toLowerCase()
+    // 判断组件是不是 Vue 中内置的组件(slot,component)
+    // 判断组件是不是 HTML 预留的标签
+    // 如果满足的话，打印出警告
     if (isBuiltInTag(lower) || config.isReservedTag(lower)) {
       warn(
         'Do not use built-in or reserved HTML elements as component ' +
@@ -348,8 +356,8 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
 }
 
 /**
- * Merge two option objects into a new one.
- * Core utility used in both instantiation and inheritance.
+ * 将两个 options 对象合并成一个
+ * 该方法是一个核心的功能方法，主要在两个地方使用：(1)new Vue()的时候使用；(2)组件集成的时候使用
  */
 export function mergeOptions (
   parent: Object,
@@ -357,6 +365,7 @@ export function mergeOptions (
   vm?: Component
 ): Object {
   if (process.env.NODE_ENV !== 'production') {
+    // 对配置对象的 components 字段进行检测
     checkComponents(child)
   }
 
@@ -364,30 +373,41 @@ export function mergeOptions (
     child = child.options
   }
 
+  // 标准化 child 中的 props、inject、directives
   normalizeProps(child, vm)
   normalizeInject(child, vm)
   normalizeDirectives(child)
+  // https://cn.vuejs.org/v2/api/#extends
+  // 允许声明扩展另一个组件 (可以是一个简单的选项对象或构造函数)
+  // 这主要是为了便于扩展单文件组件
   const extendsFrom = child.extends
   if (extendsFrom) {
+    // 如果用户配置了 extends 的话，在这里递归调用 mergeOptions，将这些 extend 都合并到 parent 中
     parent = mergeOptions(parent, extendsFrom, vm)
   }
+  // 下面的 child.mixins 和 child.extends 同理，一样是递归调用 mergeOptions 合并即可
   if (child.mixins) {
     for (let i = 0, l = child.mixins.length; i < l; i++) {
       parent = mergeOptions(parent, child.mixins[i], vm)
     }
   }
+  // 创建最终要返回的空对象
   const options = {}
   let key
   for (key in parent) {
     mergeField(key)
   }
   for (key in child) {
+    // 如果当前遍历的 key 在 parent 中不存在的话，再执行 mergeField(key)
     if (!hasOwn(parent, key)) {
       mergeField(key)
     }
   }
+  // 用于合并某一个 key 的方法
   function mergeField (key) {
+    // strat 是指合并策略
     const strat = strats[key] || defaultStrat
+    // 使用这个合并策略对 parent 和 child 中指定的 key 进行合并
     options[key] = strat(parent[key], child[key], vm, key)
   }
   return options
