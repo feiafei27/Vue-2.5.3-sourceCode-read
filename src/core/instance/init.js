@@ -59,11 +59,14 @@ export function initMixin (Vue: Class<Component>) {
     initLifecycle(vm)
     initEvents(vm)
     initRender(vm)
+    // 在 beforeCreate 回调函数中，访问不到实例中的数据，因为这些数据还没有初始化
     callHook(vm, 'beforeCreate')
     initInjections(vm) // resolve injections before data/props
     initState(vm)
     initProvide(vm) // resolve provide after data/props
+    // 在 created 回调函数中，可以访问到实例中的数据
     callHook(vm, 'created')
+    // beforeCreate 和 created 生命周期的区别是：能否访问到实例中的变量
 
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production' && config.performance && mark) {

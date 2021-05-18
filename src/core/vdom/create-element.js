@@ -115,8 +115,9 @@ export function _createElement (
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context
       )
+      // 判断 tag 是不是已经定义了的组件，如果存在这个定义了的组件的话，说明这个 tag 应该渲染该组件
     } else if (isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
-      // component
+      // 创建组件的 vnode
       vnode = createComponent(Ctor, data, context, children, tag)
     } else {
       // unknown or unlisted namespaced elements

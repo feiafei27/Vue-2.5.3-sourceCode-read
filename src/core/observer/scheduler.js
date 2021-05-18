@@ -94,6 +94,7 @@ function flushSchedulerQueue () {
 
   // 触发执行组件的 updated 和 activated 钩子函数
   callActivatedHooks(activatedQueue)
+  // 触发执行 updated 生命周期函数
   callUpdatedHooks(updatedQueue)
 
   // devtool hook

@@ -48,10 +48,11 @@ export function initLifecycle (vm: Component) {
 
 export function lifecycleMixin (Vue: Class<Component>) {
   // _update 方法的作用是将 VNode 映射成真实的 DOM
-  // 调用的时机有两个：（1）刚渲染时；（2）依赖的数据更新时
+  // 调用的时机有两个：（1）刚渲染时；（2）依赖的数据更新时（页面需要重新渲染）
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
     if (vm._isMounted) {
+      // 如果当前的 vm 已经挂载了的话，说明当前是第（2）中情况，所以需要执行 beforeUpdate 回调函数
       callHook(vm, 'beforeUpdate')
     }
     const prevEl = vm.$el
@@ -91,6 +92,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // updated in a parent's updated hook.
   }
 
+  // 强制视图重新渲染
   Vue.prototype.$forceUpdate = function () {
     const vm: Component = this
     if (vm._watcher) {
@@ -98,6 +100,8 @@ export function lifecycleMixin (Vue: Class<Component>) {
     }
   }
 
+  // Vue 实例销毁的方法
+  // beforeDestroy 和 destroyed 的生命周期函数都是在这里触发执行的
   Vue.prototype.$destroy = function () {
     const vm: Component = this
     if (vm._isBeingDestroyed) {
@@ -174,7 +178,7 @@ export function mountComponent (
     // 在这里做一些简单地校验
   }
 
-  // 触发执行 beforeMount 生命周期函数
+  // 触发执行 beforeMount 生命周期函数(挂载之前)
   callHook(vm, 'beforeMount')
 
   // 一个更新渲染组件的方法
@@ -325,9 +329,14 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
+// 执行 Vue 实例(vm)的指定回调函数
+// 内容也很简单，就是从 vm.$options 中取出指定生命周期的回调函数数组
+// 然后遍历执行数组中的函数
 export function callHook (vm: Component, hook: string) {
+  // 取出回调函数数组
   const handlers = vm.$options[hook]
   if (handlers) {
+    // 遍历执行每一个函数
     for (let i = 0, j = handlers.length; i < j; i++) {
       try {
         handlers[i].call(vm)
