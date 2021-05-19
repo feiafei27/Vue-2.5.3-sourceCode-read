@@ -20,6 +20,9 @@ let uid = 0
  * 并在表达式的值改变时触发执行回调.
  * Watcher 用于 $watch() 接口和指令.
  */
+/**
+ * Watcher 用在三个地方：（1）组件的渲染 Watcher；（2）计算属性的 Watcher；（3）侦听属性的 Watcher
+ */
 export default class Watcher {
   vm: Component;
   expression: string;
@@ -55,6 +58,8 @@ export default class Watcher {
       // deep、user、lazy 和 sync 是 Boolean 值，在这里进行处理
       this.deep = !!options.deep
       this.user = !!options.user
+      // 如果当前的 Watcher 实例是用于计算属性的话，lazy 为 true
+      // 如果 lazy 为 true 的话，并不会立即执行 this.get 方法
       this.lazy = !!options.lazy
       this.sync = !!options.sync
     } else {
@@ -67,6 +72,7 @@ export default class Watcher {
     // 借助 uid 这个全局变量实现，每次都加一，然后赋值给 this.id
     this.id = ++uid // uid for batching
     this.active = true
+    // dirty 属性是一个标志位：标志着这个 Watcher 所依赖的数据有没有变化
     this.dirty = this.lazy // for lazy watchers
     // 一个 watcher 有可能监控多个数据的改变（一个数据也多可能被多个 watcher 监控，其实它们两者是多对多的关系）
     // 每个数据都有一个对应 dep 实例。
@@ -228,6 +234,7 @@ export default class Watcher {
   update () {
     /* istanbul ignore else */
     if (this.lazy) {
+      // lazy 属性为 true，说明当前的 watcher 实例是针对计算属性的，又因为依赖的数据发生了变化，此时需要将 dirty 设为 true
       this.dirty = true
     } else if (this.sync) {
       this.run()

@@ -27,7 +27,9 @@ import {
   isServerRendering,
   isReservedAttribute
 } from '../util/index'
+import {queueWatcher} from "../observer/scheduler";
 
+// 共享的对象属性定义
 const sharedPropertyDefinition = {
   enumerable: true,
   configurable: true,
@@ -57,7 +59,10 @@ export function initState (vm: Component) {
   } else {
     observe(vm._data = {}, true /* asRootData */)
   }
+  // 初始化计算属性
   if (opts.computed) initComputed(vm, opts.computed)
+  // 初始化监听属性
+  // nativeWatch的作用：Firefox has a "watch" function on Object.prototype...
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch)
   }
@@ -185,15 +190,22 @@ function getData (data: Function, vm: Component): any {
 
 const computedWatcherOptions = { lazy: true }
 
+// 初始化计算属性
 function initComputed (vm: Component, computed: Object) {
+  // 每一个计算属性都有一个对应的 Watcher 实例
+  // 所以 vm 会有一个 _computedWatchers 属性，专门用来保存这个 Watcher 实例
   const watchers = vm._computedWatchers = Object.create(null)
   // computed properties are just getters during SSR
   const isSSR = isServerRendering()
 
+  // 遍历我们定义的计算属性，进行处理。
   for (const key in computed) {
+    // 获取当前计算属性的定义
     const userDef = computed[key]
+    // 获取该计算属性的 getter。因为计算属性既可以是函数类型，也可以是对象类型，所以在此需要处理一下。
     const getter = typeof userDef === 'function' ? userDef : userDef.get
     if (process.env.NODE_ENV !== 'production' && getter == null) {
+      // 如果 getter 不存在的话，在此打印出警告
       warn(
         `Getter is missing for computed property "${key}".`,
         vm
@@ -202,6 +214,7 @@ function initComputed (vm: Component, computed: Object) {
 
     if (!isSSR) {
       // create internal watcher for the computed property.
+      // 创建该计算属性对应的 Watcher 实例，计算属性的 Watcher 并不会立即执行 watcher.get()，是一个 lazy Watcher
       watchers[key] = new Watcher(
         vm,
         getter || noop,
@@ -214,8 +227,10 @@ function initComputed (vm: Component, computed: Object) {
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
     if (!(key in vm)) {
+      // 如果计算属性的 key，在 data、prop 中不存在的话，在 vm 上进行定义
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
+      // 否则的话，则会打印出相应的警告
       if (key in vm.$data) {
         warn(`The computed property "${key}" is already defined in data.`, vm)
       } else if (vm.$options.props && key in vm.$options.props) {
@@ -230,9 +245,19 @@ export function defineComputed (
   key: string,
   userDef: Object | Function
 ) {
+  // 在浏览器的环境下，shouldCache 为 true
   const shouldCache = !isServerRendering()
+  // const sharedPropertyDefinition = {
+  //   enumerable: true,
+  //   configurable: true,
+  //   get: noop,
+  //   set: noop
+  // }
+  // sharedPropertyDefinition 就是一个共享的对象属性定义，我们需要为这个对象设置 get 和 set 方法
+  // 下面的代码就是用于给这个对象设置 get 和 set 方法
   if (typeof userDef === 'function') {
     sharedPropertyDefinition.get = shouldCache
+      // createComputedGetter 方法能够返回一个方法，返回的方法具有缓存的作用
       ? createComputedGetter(key)
       : userDef
     sharedPropertyDefinition.set = noop
@@ -255,16 +280,40 @@ export function defineComputed (
       )
     }
   }
+  // 借助 Object.defineProperty，向 target 上设置属性
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+// createComputedGetter 方法能够返回一个方法，返回的方法具有缓存的作用
 function createComputedGetter (key) {
+  // 返回的方法会作为 get。具有缓存结果值的作用，实现的依据是 Watcher 实例的 dirty 属性，
   return function computedGetter () {
+    // this 就是 vm
+    // 拿到当前计算属性对应的 Watcher 实例
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
+      // dirty 属性是一个标志位：标志着这个 Watcher 所依赖的数据有没有变化
+      // 如果 Watcher 所依赖的数据没有变化的话，也就不用重新计算值（watcher.value）,直接返回 watcher.value 即可
+      // 如果 watcher.dirty 为 true 的话，说明 watcher.value 还没有计算或者依赖的数据变化了，此时就需要重新计算
       if (watcher.dirty) {
         watcher.evaluate()
+        // evaluate () {
+        //   this.value = this.get()
+        //   this.dirty = false
+        // }
+        // 我们可以看到，计算完 value 之后，将 dirty 设为 false，因为此时已经计算完值了，而且依赖的数据也没有变化
+        // 那么接下来什么时候 dirty 会变成 true 呢？答案是：在依赖的数据变化了的时候，看下面的源码
+        // update () {
+        //   // lazy 属性为 true，说明当前的 watcher 实例是针对计算属性的，又因为依赖的数据发生了变化，此时需要将 dirty 设为 true
+        //   if (this.lazy) {
+        //     this.dirty = true
+        //   }
+        //       ......
+        // }
       }
+      // 下面代码的作用是：让组件的渲染 Watcher 监控 当前计算属性watcher所监控的数据。
+      // 实现的效果：计算属性 watcher 所依赖的数据发生了变化的话，会触发组件的重新渲染。
+      // 底层表现就是：当前计算属性的 Watcher 实例所依赖数据的 dep 实例的 subs 数组保存 组件的渲染 Watcher
       if (Dep.target) {
         watcher.depend()
       }
