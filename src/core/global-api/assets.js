@@ -64,6 +64,8 @@ export function initAssetRegisters (Vue: GlobalAPI) {
         //     id6: definition6,
         //   }
         // }
+
+        // 如果组件的 definition 是函数类型的话，不用做特殊的处理，直接保存到 options.components 中即可
         this.options[type + 's'][id] = definition
         return definition
       }

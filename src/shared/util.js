@@ -293,7 +293,9 @@ export function looseIndexOf (arr: Array<mixed>, val: mixed): number {
 }
 
 /**
- * Ensure a function is called only once.
+ * 确保传入的 fn 只能执行一次（借助闭包）
+ * 返回的匿名函数能够执行多次，但匿名函数所包装的 fn 函数却只能执行一次
+ * 这个技巧很值得我们学习
  */
 export function once (fn: Function): Function {
   let called = false

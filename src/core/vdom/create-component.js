@@ -134,13 +134,13 @@ export function createComponent (
 
   // 异步组件的处理
   let asyncFactory
+  // 下面的 if 代码块是处理异步组件的逻辑
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
     Ctor = resolveAsyncComponent(asyncFactory, baseCtor, context)
     if (Ctor === undefined) {
-      // return a placeholder node for async component, which is rendered
-      // as a comment node but preserves all the raw information for the node.
-      // the information will be used for async server-rendering and hydration.
+      // 返回一个占位用的 VNode，将会被渲染成一个注释节点。
+      // 但是这个 VNode 保留了渲染这个异步组件所需的所有信息数据
       return createAsyncPlaceholder(
         asyncFactory,
         data,
