@@ -64,6 +64,7 @@ export function initState (vm: Component) {
   // 初始化监听属性
   // nativeWatch的作用：Firefox has a "watch" function on Object.prototype...
   if (opts.watch && opts.watch !== nativeWatch) {
+    // 进行侦听属性的初始化过程
     initWatch(vm, opts.watch)
   }
 }
@@ -350,10 +351,19 @@ function initMethods (vm: Component, methods: Object) {
   }
 }
 
+// 初始化侦听属性
 function initWatch (vm: Component, watch: Object) {
+  // 遍历用户定义的 watch 对象
   for (const key in watch) {
+    // 获取当前 watch 对象的处理器
+    // 处理器的类型可以是：函数、字符串、对象、数组
+    // 如果是 函数、字符串、对象 类型的话，此时侦听的对象和处理器是一一对应的关系
+    // 如果是 数组 类型的话，此时侦听的对象和处理器是一对多的关系
     const handler = watch[key]
+    // 在这里处理是数组类型的情况
+    // 在 createWatcher 方法中，handler 只会是 函数、字符串、对象 类型的
     if (Array.isArray(handler)) {
+      // 所以，如果 handler 是一个数组的话，需要遍历 handler 数组，为每一个处理器都执行一下 createWatcher
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
       }
@@ -366,16 +376,22 @@ function initWatch (vm: Component, watch: Object) {
 function createWatcher (
   vm: Component,
   keyOrFn: string | Function,
+  // handler 只会是 函数、字符串、对象 类型的
   handler: any,
   options?: Object
 ) {
+  // 如果 handler 是对象类型的话，需要进行下数据整形，确保 handler 指向处理函数，options 指向配置对象
   if (isPlainObject(handler)) {
     options = handler
     handler = handler.handler
   }
+  // 如果 handler 是字符串类型的话，从 vm 实例中获取到对应的处理函数
   if (typeof handler === 'string') {
     handler = vm[handler]
   }
+  // 调用 vm.$watch 实现侦听属性的功能
+  // 代码执行到这里，handler 只能是函数类型的
+  // 如果 vm 中的 key 发生了变化的话，会执行 handler 回调函数
   return vm.$watch(keyOrFn, handler, options)
 }
 
@@ -416,8 +432,10 @@ export function stateMixin (Vue: Class<Component>) {
     }
     options = options || {}
     options.user = true
+    // vm.$watch 方法的核心，借助 Watcher 实现功能
     const watcher = new Watcher(vm, expOrFn, cb, options)
     if (options.immediate) {
+      // 如果 immediate 为 true 的话，立即执行回调函数
       cb.call(vm, watcher.value)
     }
     return function unwatchFn () {

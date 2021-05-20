@@ -16,12 +16,7 @@ import type { ISet } from '../util/index'
 
 let uid = 0
 /**
- * Watcher 负责解析表达式以及收集依赖项,
- * 并在表达式的值改变时触发执行回调.
- * Watcher 用于 $watch() 接口和指令.
- */
-/**
- * Watcher 用在三个地方：（1）组件的渲染 Watcher；（2）计算属性的 Watcher；（3）侦听属性的 Watcher
+ * Watcher 有三种类型：（1）render Watcher；（2）computed Watcher；（3）user Watcher
  */
 export default class Watcher {
   vm: Component;
@@ -30,6 +25,7 @@ export default class Watcher {
   id: number;
   deep: boolean;
   // 该字段用于标识当前的 watcher 实例，是用户自定义的 watcher，还是组件的渲染 watcher
+  // 用户自定义的 watcher 包括：(1)vm.$watch; (2)侦听属性
   user: boolean;
   lazy: boolean;
   sync: boolean;
@@ -93,9 +89,10 @@ export default class Watcher {
     // parse expression for getter
     // getter 属性必须是一个函数，并且函数中有对使用到的值的读取操作（用于触发数据的 getter 函数，在 getter 函数中进行该数据依赖的收集）
     if (typeof expOrFn === 'function') {
-      // 如果 expOrFn 是一个函数类型的话，直接将它赋值给 this.getter 即可
+      // 用于处理组件 渲染Watcher 的情况
       this.getter = expOrFn
     } else {
+      // 用于处理 计算属性的watcher、侦听属性的watcher、vm.$watch生成的watcher
       // 而如果是一个字符串类型的话，例如："a.b.c.d"，是一个数据的路径
       // 就将 parsePath(expOrFn) 赋值给 this.getter，
       // parsePath 能够读取这个路径字符串对应的数据（一样能触发 getter，触发数据的 getter 是关键）
@@ -127,6 +124,7 @@ export default class Watcher {
   get () {
     // 将自身实例赋值到 Dep.target 这个静态属性上（保证全局都能拿到这个 watcher 实例），
     // 使得 getter 函数使用数据的 Dep 实例能够拿到这个 Watcher 实例，进行依赖的收集。
+    // pushTarget 操作很重要
     pushTarget(this)
     let value
     const vm = this.vm
@@ -145,6 +143,7 @@ export default class Watcher {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
       if (this.deep) {
+        // 会使得当前的 Watcher 实例不仅会监控 value 的改变，也会监控这个 value 内部值的变化
         traverse(value)
       }
       // 用于将父级组件的渲染 watcher 赋值到 Dep.target 上面
@@ -264,7 +263,7 @@ export default class Watcher {
         const oldValue = this.value
         this.value = value
         if (this.user) {
-          // 当前的 watcher 是用户自定义 watcher
+          // 当前的 watcher 是用户自定义 watcher，触发执行回调函数，参数是 新值和旧值
           try {
             this.cb.call(this.vm, value, oldValue)
           } catch (e) {
@@ -321,6 +320,12 @@ export default class Watcher {
  * Recursively traverse an object to evoke all converted
  * getters, so that every nested property inside the object
  * is collected as a "deep" dependency.
+ */
+/**
+ * 深度遍历 val，使用了递归
+ * 最终目的：（1）将 val 以及 val 中所有的属性的 depId 都保存到 seenObject 之中；
+ *          （2）(重点)触发 val 以及其内部值的 getter 方法，因为在执行 get 方法的过程中，Dep.target 指向的就是当前的 watcher 实例，
+ *               所以当前的 watcher 实例就会监控 val 以及其内部值的变更。这就是实现 deep watcher 功能的关键所在
  */
 const seenObjects = new Set()
 function traverse (val: any) {
