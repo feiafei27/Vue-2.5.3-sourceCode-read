@@ -66,6 +66,8 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
   return map
 }
 
+// export const patch: Function = createPatchFunction({ nodeOps, modules })
+// createPatchFunction 的作用：根据当前的运行环境，创建出对应的 patch 方法，并返回。
 export function createPatchFunction (backend) {
   let i, j
   const cbs = {}

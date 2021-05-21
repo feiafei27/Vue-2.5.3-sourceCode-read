@@ -31,6 +31,7 @@ extend(Vue.options.directives, platformDirectives)
 extend(Vue.options.components, platformComponents)
 
 // install platform patch function
+// 渲染以及更新 DOM 时，调用的方法，很重要。
 Vue.prototype.__patch__ = inBrowser ? patch : noop
 
 // public mount method
