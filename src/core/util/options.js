@@ -290,12 +290,13 @@ function checkComponents (options: Object) {
 }
 
 /**
- * 对 Props 进行标准化
+ * 对 Props 进行标准化：将所有形式的 prop 都转换成对象的形式。
  */
 function normalizeProps (options: Object, vm: ?Component) {
   const props = options.props
   // 如果当前的 options 没有配置 props 的话，直接 return 即可
   if (!props) return
+  // 最终要返回的对象
   const res = {}
   let i, val, name
   // props 可以配置成 ['xxx', 'xxx2', 'xxx3'] 这种形式

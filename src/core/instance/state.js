@@ -69,8 +69,11 @@ export function initState (vm: Component) {
   }
 }
 
+// 初始化 Props
 function initProps (vm: Component, propsOptions: Object) {
+  // 父组件传递给子组件的 Props 数据
   const propsData = vm.$options.propsData || {}
+  // 存储子组件计算过后的值
   const props = vm._props = {}
   // cache prop keys so that future props updates can iterate using Array
   // instead of dynamic object key enumeration.
@@ -78,8 +81,14 @@ function initProps (vm: Component, propsOptions: Object) {
   const isRoot = !vm.$parent
   // root instance props should be converted
   observerState.shouldConvert = isRoot
+  // 遍历 propsOptions（规范化后的 props 对象）
   for (const key in propsOptions) {
     keys.push(key)
+    // 校验和求值
+    // key：当前遍历的 propsOptions 对象的 key
+    // propsOptions：规范化后的 props 对象
+    // propsData：父组件传递给子组件的 Props 数据
+    // vm：Vue 实例
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
@@ -93,6 +102,7 @@ function initProps (vm: Component, propsOptions: Object) {
       }
       defineReactive(props, key, value, () => {
         if (vm.$parent && !isUpdatingChildComponent) {
+          // 避免在子组件中直接修改 prop 的值，这样做的目的是为了：保证数据的单向流动。
           warn(
             `Avoid mutating a prop directly since the value will be ` +
             `overwritten whenever the parent component re-renders. ` +
@@ -103,12 +113,12 @@ function initProps (vm: Component, propsOptions: Object) {
         }
       })
     } else {
+      // 将 props（vm._props）中的数据转换 成响应式的
       defineReactive(props, key, value)
     }
-    // static props are already proxied on the component's prototype
-    // during Vue.extend(). We only need to proxy props defined at
-    // instantiation here.
+    // 进行代理的操作
     if (!(key in vm)) {
+      // 将 vm.key 代理到 vm._props.key 上
       proxy(vm, `_props`, key)
     }
   }

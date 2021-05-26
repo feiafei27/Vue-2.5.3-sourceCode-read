@@ -18,24 +18,31 @@ type PropOptions = {
   validator: ?Function
 };
 
+// 对 Prop 进行校验和求值
 export function validateProp (
   key: string,
   propOptions: Object,
   propsData: Object,
   vm?: Component
 ): any {
+  // 拿到这个 prop 的定义
   const prop = propOptions[key]
+  // 判断父组件传递的 Props 中有传递 key 对应的值。如果没有，absent 则为 true
   const absent = !hasOwn(propsData, key)
+  // 拿到父组件传递的 Props 中对应 key 的值
   let value = propsData[key]
-  // handle boolean props
+  // （1）对布尔类型的 Prop 进行处理
+  // 判断是不是 Boolean 的类型
   if (isType(Boolean, prop.type)) {
     if (absent && !hasOwn(prop, 'default')) {
+      // 如果父组件没有传递该 prop，并且没有配置默认值的话，则直接设为 false
       value = false
     } else if (!isType(String, prop.type) && (value === '' || value === hyphenate(key))) {
+      // 如果该 prop 不是字符串类型，并且没有传递值或者传递了 true 值的话，则将 value 设为 true
       value = true
     }
   }
-  // check default value
+  // （2）对默认值的处理：如果父组件没有传递该 prop 值的话，则进行默认值的处理
   if (value === undefined) {
     value = getPropDefaultValue(vm, prop, key)
     // since the default value is a fresh copy,
@@ -45,6 +52,7 @@ export function validateProp (
     observe(value)
     observerState.shouldConvert = prevShouldConvert
   }
+  // （3）在非生产环境下，对 Prop 进行断言
   if (process.env.NODE_ENV !== 'production') {
     assertProp(prop, key, value, vm, absent)
   }
@@ -52,15 +60,15 @@ export function validateProp (
 }
 
 /**
- * Get the default value of a prop.
+ * 试图获取 prop 的默认值
  */
 function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): any {
-  // no default, return undefined
+  // 如果父组件没有传递该 prop 的值，并且也没有配置 prop 的话，则直接返回 undefined 即可
   if (!hasOwn(prop, 'default')) {
     return undefined
   }
   const def = prop.default
-  // warn against non-factory defaults for Object & Array
+  // Object/Array 类型的 prop 的 default 必须是一个工厂函数，如果不满足的话，在这里进行警告
   if (process.env.NODE_ENV !== 'production' && isObject(def)) {
     warn(
       'Invalid default value for prop "' + key + '": ' +
@@ -69,16 +77,16 @@ function getPropDefaultValue (vm: ?Component, prop: PropOptions, key: string): a
       vm
     )
   }
-  // the raw prop value was also undefined from previous render,
-  // return previous default value to avoid unnecessary watcher trigger
+  // 一个优化点，出现在重新渲染的时候。如果父组件没有传递该 Prop，并且子组件已经有这个 prop 值的话。直接返回 vm._props[key] 即可
+  // 可以避免不必要的 watcher 函数触发
+  // 例如：有一个 prop，其有 default 配置，并且初次渲染以及更新渲染时都没有通过父组件传递这个 prop，则能用到这个优化点
   if (vm && vm.$options.propsData &&
     vm.$options.propsData[key] === undefined &&
     vm._props[key] !== undefined
   ) {
     return vm._props[key]
   }
-  // call factory function for non-Function types
-  // a value is Function if its prototype is function even across different execution context
+  // 调用该 Prop 配置的 default 工厂函数，获取并返回默认值
   return typeof def === 'function' && getType(prop.type) !== 'Function'
     ? def.call(vm)
     : def
@@ -94,6 +102,7 @@ function assertProp (
   vm: ?Component,
   absent: boolean
 ) {
+  // 如果当前的 prop 是必填，但是父组件没有传递该 prop 的值的话，则打印出该警告
   if (prop.required && absent) {
     warn(
       'Missing required prop: "' + name + '"',
@@ -104,6 +113,7 @@ function assertProp (
   if (value == null && !prop.required) {
     return
   }
+  // 对 prop 类型的判断，不满足配置 type 的话，则打印出相应的警告
   let type = prop.type
   let valid = !type || type === true
   const expectedTypes = []
@@ -126,6 +136,7 @@ function assertProp (
     )
     return
   }
+  // 使用用户自定义的 validator 方法，对传递进来的 value 进行验证
   const validator = prop.validator
   if (validator) {
     if (!validator(value)) {
