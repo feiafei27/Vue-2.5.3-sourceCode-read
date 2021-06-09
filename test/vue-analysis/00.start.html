@@ -11,15 +11,15 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
-  let app = new Vue({
-    el: '#app',
-    template: '<div>{{msg}}</div>',
-    data() {
-      return {
-        msg: 'Hello Vue'
-      }
+new Vue({
+  el: '#app',
+  data() {
+    return {
+      message: 'Hello Vue'
     }
-  })
+  },
+  template: '<div id="container" class="container" name="tom">{{ message }}</div>'
+})
 </script>
 </body>
 </html>

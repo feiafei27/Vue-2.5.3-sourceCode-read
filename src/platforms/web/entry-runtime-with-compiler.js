@@ -78,6 +78,7 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
+      // compileToFunctions 是一个函数，作用是将：template 模板字符串编译成 render 函数
       const { render, staticRenderFns } = compileToFunctions(template, {
         shouldDecodeNewlines,
         delimiters: options.delimiters,

@@ -17,16 +17,19 @@ function createFunction (code, errors) {
   }
 }
 
+// 返回值是一个函数。
 export function createCompileToFunctionFn (compile: Function): Function {
   const cache: {
     [key: string]: CompiledFunctionResult;
   } = Object.create(null)
 
+  // 该函数的作用是：将 template 模板字符串编译成 render 函数，也就是编译的入口
   return function compileToFunctions (
     template: string,
     options?: CompilerOptions,
     vm?: Component
   ): CompiledFunctionResult {
+    // 借助 extend 拷贝一份 options
     options = extend({}, options)
     const warn = options.warn || baseWarn
     delete options.warn
@@ -34,6 +37,8 @@ export function createCompileToFunctionFn (compile: Function): Function {
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'production') {
       // detect possible CSP restriction
+      // 编译的最后需要借助 new Function('xxx') 将代码字符串转换成 render 函数。
+      // 所以在这里测试一下，当前的环境支不支持 new Function('xxx')，如果不支持的话，打印出警告
       try {
         new Function('return 1')
       } catch (e) {

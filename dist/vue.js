@@ -4652,7 +4652,6 @@ function dedupe (latest, extended, sealed) {
 }
 
 function Vue$3 (options) {
-  debugger
   // 如果当前的环境不是生产环境，并且当前命名空间中的 this 不是 Vue 的实例的话
   // 发出警告，Vue 必须通过 new Vue({}) 使用，而不是把 Vue 当做函数使用
   if ("development" !== 'production' &&
@@ -10456,6 +10455,7 @@ function createCompileToFunctionFn (compile) {
     var res = {};
     var fnGenErrors = [];
     res.render = createFunction(compiled.render, fnGenErrors);
+    console.log(res.render)
     res.staticRenderFns = compiled.staticRenderFns.map(function (code) {
       return createFunction(code, fnGenErrors)
     });
@@ -10557,6 +10557,7 @@ var createCompiler = createCompilerCreator(function baseCompile (
 /*  */
 
 var ref$1 = createCompiler(baseOptions);
+console.log(ref$1)
 var compileToFunctions = ref$1.compileToFunctions;
 
 /*  */
@@ -10622,6 +10623,7 @@ Vue$3.prototype.$mount = function (
       var render = ref.render;
       var staticRenderFns = ref.staticRenderFns;
       options.render = render;
+      console.log(render)
       options.staticRenderFns = staticRenderFns;
 
       /* istanbul ignore if */
