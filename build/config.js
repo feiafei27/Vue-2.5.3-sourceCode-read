@@ -24,17 +24,21 @@ const weexFactoryPlugin = {
   }
 }
 
+// 配置的别名。key 是：web、weex、server 等等，value 是这些目录的绝对路径
 const aliases = require('./alias')
+// 解析路径的函数
 const resolve = p => {
   const base = p.split('/')[0]
   if (aliases[base]) {
+    // 如果 aliases 中有配置这个别名的话，就将这个别名对应的绝对路径和文件名拼接起来
     return path.resolve(aliases[base], p.slice(base.length + 1))
   } else {
+    // 没有配置别名的话，就直接当前路径上一级再拼接上 p
     return path.resolve(__dirname, '../', p)
   }
 }
 
-// 不同版本 Vue.js 的配置
+// 不同版本 Vue.js 的基础配置信息
 const builds = {
   // Runtime only (CommonJS). Used by bundlers e.g. Webpack & Browserify
   'web-runtime-cjs': {
@@ -169,6 +173,7 @@ const builds = {
   }
 }
 
+// 根据 builds 中的基础配置信息，生成 rollup 能够运行的配置对象
 function genConfig (name) {
   const opts = builds[name]
   const config = {

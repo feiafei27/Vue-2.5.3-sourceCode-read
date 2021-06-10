@@ -2,6 +2,7 @@ const path = require('path')
 
 const resolve = p => path.resolve(__dirname, '../', p)
 
+// 配置别名，resolve() 函数的返回值是绝对路径。
 module.exports = {
   vue: resolve('src/platforms/web/entry-runtime-with-compiler'),
   compiler: resolve('src/compiler'),

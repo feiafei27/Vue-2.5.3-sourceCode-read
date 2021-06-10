@@ -4,6 +4,7 @@ const zlib = require('zlib')
 const rollup = require('rollup')
 const uglify = require('uglify-js')
 
+// 判断 dist 目录是否存在，如果不存在的话，创建 dist 文件夹
 if (!fs.existsSync('dist')) {
   fs.mkdirSync('dist')
 }
@@ -12,6 +13,11 @@ if (!fs.existsSync('dist')) {
 let builds = require('./config').getAllBuilds()
 
 // 根据命令行传递的参数，过滤掉不需要打包的版本的配置对象。
+// package.json 中一共有三个打包命令：
+// （1）"build": "node build/build.js",
+// （2）"build:ssr": "npm run build -- web-runtime-cjs,web-server-renderer",
+// （3）"build:weex": "npm run build -- weex",
+// 不同的命令有不同的打包对象，对于不需要打包的配置对象，过滤掉
 if (process.argv[2]) {
   const filters = process.argv[2].split(',')
   builds = builds.filter(b => {
@@ -27,7 +33,7 @@ if (process.argv[2]) {
 // 进行编译操作，传递的参数是 rollup 配置对象的数组
 build(builds)
 
-// 对 builds 进行递归编译操作
+// 对 builds（rollup配置对象数组）进行遍历编译操作
 function build (builds) {
   let built = 0
   const total = builds.length
@@ -51,12 +57,16 @@ function buildEntry (config) {
   const isProd = /min\.js$/.test(file)
   // 使用 rollup 提供的方法进行编译操作
   return rollup.rollup(config)
-    // 编译完成之后，执行 generate 方法，生成以及返回目标代码
+    // 编译完成之后，执行 bundle 的 generate 方法，生成目标代码
+    // rollup 文章的解释：
+    // generate code and a sourcemap
+    // const { code, map } = await bundle.generate(outputOptions);
     .then(bundle => bundle.generate(output))
     // 在这里，就能够拿到最终生成的代码了
     .then(({ code }) => {
       // 如果是生成生产环境的代码的话，在这里进行代码的压缩操作
       if (isProd) {
+        // 压缩后的代码字符串：minified
         var minified = (banner ? banner + '\n' : '') + uglify.minify(code, {
           output: {
             ascii_only: true
@@ -68,6 +78,7 @@ function buildEntry (config) {
         // 将最终生成的代码写到文件中，并且在控制台打印出日志
         return write(file, minified, true)
       } else {
+        // 将最终生成的代码写到文件中，并且在控制台打印出日志
         return write(file, code)
       }
     })
@@ -97,6 +108,7 @@ function write (dest, code, zip) {
   })
 }
 
+// 辅助方法：计算字符串的大小
 function getSize (code) {
   return (code.length / 1024).toFixed(2) + 'kb'
 }
