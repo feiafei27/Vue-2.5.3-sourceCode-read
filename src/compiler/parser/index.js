@@ -66,6 +66,7 @@ export function parse (
 ): ASTElement | void {
   warn = options.warn || baseWarn
 
+  ////////////// 解析 options 中的配置，并将配置项赋值给变量 //////////////
   platformIsPreTag = options.isPreTag || no
   platformMustUseProp = options.mustUseProp || no
   platformGetTagNamespace = options.getTagNamespace || no
@@ -75,6 +76,7 @@ export function parse (
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode')
 
   delimiters = options.delimiters
+  ////////////// 解析 options 中的配置，并将配置项赋值给变量 //////////////
 
   const stack = []
   const preserveWhitespace = options.preserveWhitespace !== false
@@ -101,6 +103,7 @@ export function parse (
     }
   }
 
+  // 调用 parseHTML 开始解析模板字符串
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -108,6 +111,8 @@ export function parse (
     canBeLeftOpenTag: options.canBeLeftOpenTag,
     shouldDecodeNewlines: options.shouldDecodeNewlines,
     shouldKeepComment: options.comments,
+    // 下面的回调函数用于 AST 元素的生成
+    // 针对开始标签
     start (tag, attrs, unary) {
       // check namespace.
       // inherit parent ns if there is one
@@ -119,11 +124,14 @@ export function parse (
         attrs = guardIESVGBug(attrs)
       }
 
+      // 首先创建 AST 节点。然后在下面的代码中，对这个 AST 节点进行丰富，增加属性，
+      // 丰富 AST 节点是为接下来 "生成代码" 而服务的，对节点描述的越丰富，接下来生成代码也就越容易。
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
       }
 
+      // 判断是不是 style、script 元素，如果是的话，打印出警告。
       if (isForbiddenTag(element) && !isServerRendering()) {
         element.forbidden = true
         process.env.NODE_ENV !== 'production' && warn(
@@ -134,6 +142,7 @@ export function parse (
       }
 
       // apply pre-transforms
+      // 对 element 执行预转换
       for (let i = 0; i < preTransforms.length; i++) {
         element = preTransforms[i](element, options) || element
       }
@@ -151,13 +160,18 @@ export function parse (
         processRawAttrs(element)
       } else if (!element.processed) {
         // structural directives
+        // 处理 v-for
         processFor(element)
+        // 处理 v-if
         processIf(element)
+        // 处理 v-once
         processOnce(element)
         // element-scope stuff
         processElement(element, options)
       }
+      ////////////////// 上面的代码是对单个 AST 的构造 //////////////////
 
+      ////////////////// 下面的代码是对整个 AST 树的管理和维护 //////////////////
       function checkRootConstraints (el) {
         if (process.env.NODE_ENV !== 'production') {
           if (el.tag === 'slot' || el.tag === 'template') {
@@ -177,9 +191,15 @@ export function parse (
 
       // tree management
       if (!root) {
+        // 如果 root 为 undefined 的话，说明当前处理的就是根节点
+        // 所以将 element 直接赋值给 root
         root = element
+        // 检查这个根节点满不满足规范
         checkRootConstraints(root)
       } else if (!stack.length) {
+        // 如果存在 root 节点，并且 stack 栈数组为空的话，说明模板存在多个根节点
+        // 多个根节点的话，如果根节点上面有 v-if, v-else-if and v-else 来确保某一个特定时刻，只有一个根节点的话，
+        // 也是可以被允许的。而如果没有 v-if, v-else-if and v-else 的话，则会打印出警告
         // allow root elements with v-if, v-else-if and v-else
         if (root.if && (element.elseif || element.else)) {
           checkRootConstraints(element)
@@ -203,10 +223,12 @@ export function parse (
           const name = element.slotTarget || '"default"'
           ;(currentParent.scopedSlots || (currentParent.scopedSlots = {}))[name] = element
         } else {
+          // 维护父子 AST 的关系
           currentParent.children.push(element)
           element.parent = currentParent
         }
       }
+      // 如果不是自闭和节点的话
       if (!unary) {
         currentParent = element
         stack.push(element)
@@ -218,7 +240,7 @@ export function parse (
         postTransforms[i](element, options)
       }
     },
-
+    // 针对结束标签
     end () {
       // remove trailing whitespace
       const element = stack[stack.length - 1]
@@ -231,14 +253,20 @@ export function parse (
       currentParent = stack[stack.length - 1]
       endPre(element)
     },
-
+    // 针对文本内容
     chars (text: string) {
       if (!currentParent) {
+        // 如果当前没有 currentParent 的话，说明有两种情况：
+        // (1) 组件的 template 是一个纯文本
+        // (2) 当前的文本写在标签的外面
+        // 这两种情况都是不被允许的
         if (process.env.NODE_ENV !== 'production') {
+          // 针对情况(1)
           if (text === template) {
             warnOnce(
               'Component template requires a root element, rather than just text.'
             )
+          // 针对情况(2)
           } else if ((text = text.trim())) {
             warnOnce(
               `text "${text}" outside root element will be ignored.`
@@ -248,6 +276,7 @@ export function parse (
         return
       }
       // IE textarea placeholder bug
+      // 对 IE 浏览器 textarea placeholder bug 的处理
       /* istanbul ignore if */
       if (isIE &&
         currentParent.tag === 'textarea' &&
@@ -255,6 +284,7 @@ export function parse (
       ) {
         return
       }
+      // 获取到父元素的 children 属性数组
       const children = currentParent.children
       text = inPre || text.trim()
         ? isTextTag(currentParent) ? text : decodeHTMLCached(text)
@@ -262,13 +292,16 @@ export function parse (
         : preserveWhitespace && children.length ? ' ' : ''
       if (text) {
         let expression
+        // 调用 parseText 对 text 进行解析。解析插值、过滤器等等特性 <span>{{name | nameFilter}}</span>
         if (!inVPre && text !== ' ' && (expression = parseText(text, delimiters))) {
+          // 将当前文本的 AST 节点 push 到 children 数组中
           children.push({
             type: 2,
             expression,
             text
           })
         } else if (text !== ' ' || !children.length || children[children.length - 1].text !== ' ') {
+          // 处理 text 是纯文本的情况
           children.push({
             type: 3,
             text
@@ -276,7 +309,9 @@ export function parse (
         }
       }
     },
+    // 针对评论节点
     comment (text: string) {
+      // 注释 AST 和纯文本 AST 很像，唯一的不同是有一个 isComment 属性，并且属性值为 true
       currentParent.children.push({
         type: 3,
         text,
@@ -284,6 +319,11 @@ export function parse (
       })
     }
   })
+  // AST type 解释
+  // 1：元素节点
+  // 2：含有表达式的文本节点
+  // 3：纯文本节点
+
   return root
 }
 
