@@ -37,19 +37,25 @@ export type CodegenResult = {
   staticRenderFns: Array<string>
 };
 
+// 代码生成器。AST ==> render 函数代码字符串
 export function generate (
   ast: ASTElement | void,
   options: CompilerOptions
 ): CodegenResult {
   const state = new CodegenState(options)
+  // 对 ast 进行判断。
+  // 如果其存在的话，就执行 genElement(ast, state) 生成代码字符串，
+  // 否则的话，直接返回 '_c("div")'，创建空的 div。
   const code = ast ? genElement(ast, state) : '_c("div")'
   return {
+    // 将生成的代码字符串（code）拼接到 `with(this){return ${code}}`，形成最终的代码字符串
     render: `with(this){return ${code}}`,
     staticRenderFns: state.staticRenderFns
   }
 }
 
 export function genElement (el: ASTElement, state: CodegenState): string {
+  // 针对不同的情况，进入不同的分支
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state)
   } else if (el.once && !el.onceProcessed) {
@@ -57,6 +63,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
   } else if (el.for && !el.forProcessed) {
     return genFor(el, state)
   } else if (el.if && !el.ifProcessed) {
+    // 用于处理 v-if
     return genIf(el, state)
   } else if (el.tag === 'template' && !el.slotTarget) {
     return genChildren(el, state) || 'void 0'
@@ -125,6 +132,7 @@ export function genIf (
   altGen?: Function,
   altEmpty?: string
 ): string {
+  // ifProcessed 属性用于判断 el 的 v-if 有没有被处理过，避免重复处理。
   el.ifProcessed = true // avoid recursion
   return genIfConditions(el.ifConditions.slice(), state, altGen, altEmpty)
 }
