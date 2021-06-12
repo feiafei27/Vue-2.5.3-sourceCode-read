@@ -175,7 +175,9 @@ const builds = {
 
 // 根据 builds 中的基础配置信息，生成 rollup 能够运行的配置对象
 function genConfig (name) {
+  // 取出该版本 Vue 所对应的基础配置对象
   const opts = builds[name]
+  // 开始构建 Rollup 配置对象，很简单，取出 opts 中的数据，赋值到 config 对象中即可
   const config = {
     input: opts.entry,
     external: opts.external,
@@ -198,6 +200,7 @@ function genConfig (name) {
   }
 
   if (opts.env) {
+    // replace 插件能够替换代码中的字符串
     config.plugins.push(replace({
       'process.env.NODE_ENV': JSON.stringify(opts.env)
     }))
