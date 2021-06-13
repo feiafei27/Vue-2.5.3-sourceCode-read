@@ -19,22 +19,21 @@ import { patch } from './patch'
 import platformDirectives from './directives/index'
 import platformComponents from './components/index'
 
-// install platform specific utils
+// 安装与平台有关的工具函数（与平台相关是指：在不同的平台下，这些资源的实现方式是不同的）
 Vue.config.mustUseProp = mustUseProp
 Vue.config.isReservedTag = isReservedTag
 Vue.config.isReservedAttr = isReservedAttr
 Vue.config.getTagNamespace = getTagNamespace
 Vue.config.isUnknownElement = isUnknownElement
 
-// install platform runtime directives & components
+// 安装与平台有关的运行时指令和组件
 extend(Vue.options.directives, platformDirectives)
 extend(Vue.options.components, platformComponents)
 
-// install platform patch function
-// 渲染以及更新 DOM 时，调用的方法，很重要。
+// 渲染以及更新 DOM 时，调用的方法，很重要。这个函数也是与平台相关的。
 Vue.prototype.__patch__ = inBrowser ? patch : noop
 
-// public mount method
+// 运行时版本代码使用的 $mount 函数。调用这个 $mount 函数，模板字符串必须已经编译成 render 函数
 Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean

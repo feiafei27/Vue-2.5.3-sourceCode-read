@@ -16,11 +16,18 @@ function Vue (options) {
   this._init(options)
 }
 
-// 下面函数的作用是：往 Vue 的原型上混入原型方法
+// 下面函数的作用是：往 Vue 的原型上写入原型函数，这些函数是给 Vue 的实例使用的
+// 这些函数分为两类：一类是 Vue 内部使用的，特征是函数名以 '_' 开头；
+//                 还有一类是给用户使用的，特征是函数名以 '$' 开头，这些函数可以在 Vue 的官方文档中看到;
+// 写入 vm._init
 initMixin(Vue)
+// 写入 vm.$set、vm.$delete、vm.$watch
 stateMixin(Vue)
+// 写入 vm.$on、vm.$once、vm.$off、vm.$emit
 eventsMixin(Vue)
+// 写入 vm._update、vm.$forceUpdate、vm.$destroy
 lifecycleMixin(Vue)
+// 写入 vm.$nextTick、vm._render
 renderMixin(Vue)
 
 export default Vue
