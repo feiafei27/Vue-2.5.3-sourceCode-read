@@ -6,20 +6,44 @@
 </head>
 <body>
 
-  <!-- app container -->
-  <div id="app"></div>
+<!-- app container -->
+<div id="app"></div>
 
 <script src="../../dist/vue.js"></script>
 <script>
+Vue.filter('firstworld', function (value) {
+  return value[0]
+})
+
 new Vue({
   el: '#app',
   data() {
     return {
-      data: ['A', 'B', 'C', 'D'],
-      isShow: true
+      name: 'tom',
+      age: 28,
+      height: 178
     }
   },
-  template: `1122<div>ooo</div>`
+  beforeCreate(){
+    console.log('beforeCreate')
+  },
+  mounted(){
+    console.log('mounted')
+  },
+  filters: {
+    capitalize: function (value) {
+      if (!value) return ''
+      value = value.toString()
+      return value.charAt(0).toUpperCase() + value.slice(1)
+    }
+  },
+  template: `
+    <div class="container">
+      <div class="item">名字：{{name}}</div>
+      <div class="item">年龄：{{age}}</div>
+      <div class="item">身高：{{height}}</div>
+    </div>
+  `
 })
 </script>
 </body>

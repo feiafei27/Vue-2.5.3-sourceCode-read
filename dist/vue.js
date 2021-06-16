@@ -4522,6 +4522,7 @@ var uid$1 = 0;
 
 function initMixin (Vue) {
   Vue.prototype._init = function (options) {
+    debugger
     var vm = this;
     // a uid
     vm._uid = uid$1++;
@@ -9089,7 +9090,6 @@ function parse (
       });
     }
   });
-  debugger
   return root
 }
 

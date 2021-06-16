@@ -20,7 +20,7 @@ export function initMixin (Vue: Class<Component>) {
   Vue.prototype._init = function (options?: Object) {
     // vm 就是 Vue 的实例对象，在 _init 方法中会对 vm 进行一系列的初始化操作
     const vm: Component = this
-    // a uid
+    // 赋值唯一的 id
     vm._uid = uid++
 
     let startTag, endTag
@@ -32,15 +32,19 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     // a flag to avoid this being observed
+    // 一个标记，用于防止 vm 变成响应式的数据
     vm._isVue = true
-    // merge options
+    // 合并 options，options 用于保存当前 Vue 组件能够使用的各种资源和配置，例如：组件、指令、过滤器等等
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
-      // 合并 options
+      // options 中保存的是当前组件能够使用资源和配置，这些都是当前组件私有的。
+      // 但还有一些全局的资源，例如：使用 Vue.component、Vue.filter 等注册的资源，
+      // 这些资源都是保存到 Vue.options 中，因为是全局的资源，所以当前的组件也要能访问使用到，
+      // 所以在这里，将这个保存全局资源的 options 和当前组件的 options 进行合并，并保存到 vm.$options
       vm.$options = mergeOptions(
         // 这里实际传入的是 Vue 的 options
         resolveConstructorOptions(vm.constructor),
