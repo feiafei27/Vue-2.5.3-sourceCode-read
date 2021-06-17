@@ -331,7 +331,7 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
-// 执行 Vue 实例(vm)的指定回调函数
+// 执行 Vue 实例(vm)中的生命周期函数
 // 内容也很简单，就是从 vm.$options 中取出指定生命周期的回调函数数组
 // 然后遍历执行数组中的函数
 export function callHook (vm: Component, hook: string) {

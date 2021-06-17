@@ -6,7 +6,7 @@ import { lifecycleMixin } from './lifecycle'
 import { warn } from '../util/index'
 
 function Vue (options) {
-  // 如果当前的环境不是生产环境，并且当前命名空间中的 this 不是 Vue 的实例的话
+  // 如果当前的环境不是生产环境，并且当前命名空间中的 this 不是 Vue 的实例的话,
   // 发出警告，Vue 必须通过 new Vue({}) 使用，而不是把 Vue 当做函数使用
   if (process.env.NODE_ENV !== 'production' &&
     !(this instanceof Vue)

@@ -43,10 +43,10 @@ export function initMixin (Vue: Class<Component>) {
     } else {
       // options 中保存的是当前组件能够使用资源和配置，这些都是当前组件私有的。
       // 但还有一些全局的资源，例如：使用 Vue.component、Vue.filter 等注册的资源，
-      // 这些资源都是保存到 Vue.options 中，因为是全局的资源，所以当前的组件也要能访问使用到，
+      // 这些资源都是保存到 Vue.options 中，因为是全局的资源，所以当前的组件也要能访问到，
       // 所以在这里，将这个保存全局资源的 options 和当前组件的 options 进行合并，并保存到 vm.$options
       vm.$options = mergeOptions(
-        // 这里实际传入的是 Vue 的 options
+        // resolveConstructorOptions 函数的返回值是 Vue 的 options
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
@@ -60,15 +60,23 @@ export function initMixin (Vue: Class<Component>) {
     }
     // expose real self
     vm._self = vm
+    // 初始化与生命周期有关的内容
     initLifecycle(vm)
+    // 初始化与事件有关的属性以及处理父组件绑定到当前组件的方法。
     initEvents(vm)
+    // 初始化与渲染有关的内容
     initRender(vm)
     // 在 beforeCreate 回调函数中，访问不到实例中的数据，因为这些数据还没有初始化
+    // 执行 beforeCreate 生命周期函数
     callHook(vm, 'beforeCreate')
+    // 解析初始化当前组件的 inject
     initInjections(vm) // resolve injections before data/props
+    // 初始化 state，包括 props、methods、data、computed、watch
     initState(vm)
+    // 初始化 provide
     initProvide(vm) // resolve provide after data/props
     // 在 created 回调函数中，可以访问到实例中的数据
+    // 执行 created 回调函数
     callHook(vm, 'created')
     // beforeCreate 和 created 生命周期的区别是：能否访问到实例中的变量
 
@@ -79,6 +87,7 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
+    // 如果配置中有 el 的话，则自动执行挂载操作
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }
