@@ -214,14 +214,13 @@ export function defineReactive (
     get: function reactiveGetter () {
       // 触发执行上面拿到的 getter
       const value = getter ? getter.call(obj) : val
+      ///////////////////// 下面是依赖收集的操作 /////////////////////
       // 如果 Dep 上的静态属性 target 存在的话
       if (Dep.target) {
         // 向 dep 中添加依赖，依赖是 Watcher 的实例
         dep.depend()
         if (childOb) {
           // childOb.dep 用来存储数组类型值的依赖
-          // 普通对象类型的值也会走到这里，数组类型和普通对象类型的值都会有 __ob__属性
-          // 也就是说：对于某一 val 而言，除了将依赖收集到 dep 中，也会将依赖收集到 val.__ob__.dep 中
           childOb.dep.depend()
           // 如果值是数组类型的话
           if (Array.isArray(value)) {
