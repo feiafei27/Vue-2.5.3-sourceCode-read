@@ -11,40 +11,36 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
-Vue.filter('firstworld', function (value) {
-  return value[0]
-})
 
-new Vue({
-  el: '#app',
-  data() {
-    return {
-      name: 'tom',
-      age: 28,
-      height: 178
+  Vue.component('fufei-component',{
+    template: `
+      <div class="container">
+        <h1>{{name}}</h1>
+      </div>
+    `,
+    props: {
+      name: {
+        type: String,
+        default: '哈哈哈'
+      }
     }
-  },
-  beforeCreate(){
-    console.log('beforeCreate')
-  },
-  mounted(){
-    console.log('mounted')
-  },
-  filters: {
-    capitalize: function (value) {
-      if (!value) return ''
-      value = value.toString()
-      return value.charAt(0).toUpperCase() + value.slice(1)
-    }
-  },
-  template: `
-    <div class="container">
-      <div class="item">名字：{{name}}</div>
-      <div class="item">年龄：{{age}}</div>
-      <div class="item">身高：{{height}}</div>
-    </div>
-  `
-})
+  })
+
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+      }
+    },
+    template: `
+      <div class="main-container">
+        <h1>container 内的元素</h1>
+        <fufei-component></fufei-component>
+        <fufei-component></fufei-component>
+        <fufei-component></fufei-component>
+      </div>
+    `
+  })
 </script>
 </body>
 </html>

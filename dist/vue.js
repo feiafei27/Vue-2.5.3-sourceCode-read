@@ -2769,6 +2769,9 @@ function mountComponent (
   }
   callHook(vm, 'beforeMount');
 
+  console.log("**mountComponent**")
+  console.log(vm)
+
   var updateComponent;
   /* istanbul ignore if */
   if ("development" !== 'production' && config.performance && mark) {
@@ -4522,7 +4525,6 @@ var uid$1 = 0;
 
 function initMixin (Vue) {
   Vue.prototype._init = function (options) {
-    debugger
     var vm = this;
     // a uid
     vm._uid = uid$1++;
@@ -10456,7 +10458,6 @@ function createCompileToFunctionFn (compile) {
     var res = {};
     var fnGenErrors = [];
     res.render = createFunction(compiled.render, fnGenErrors);
-    console.log(res.render)
     res.staticRenderFns = compiled.staticRenderFns.map(function (code) {
       return createFunction(code, fnGenErrors)
     });
@@ -10536,8 +10537,6 @@ function createCompilerCreator (baseCompile) {
   }
 }
 
-/*  */
-
 // `createCompilerCreator` allows creating compilers that use alternative
 // parser/optimizer/codegen, e.g the SSR optimizing compiler.
 // Here we just export a default compiler using the default parts.
@@ -10545,9 +10544,15 @@ var createCompiler = createCompilerCreator(function baseCompile (
   template,
   options
 ) {
+  console.log("1:")
+  console.log(template.trim())
   var ast = parse(template.trim(), options);
+  console.log("2:")
+  console.log(ast)
   optimize(ast, options);
   var code = generate(ast, options);
+  console.log("3:")
+  console.log(code)
   return {
     ast: ast,
     render: code.render,
@@ -10558,7 +10563,6 @@ var createCompiler = createCompilerCreator(function baseCompile (
 /*  */
 
 var ref$1 = createCompiler(baseOptions);
-console.log(ref$1)
 var compileToFunctions = ref$1.compileToFunctions;
 
 /*  */
@@ -10624,7 +10628,6 @@ Vue$3.prototype.$mount = function (
       var render = ref.render;
       var staticRenderFns = ref.staticRenderFns;
       options.render = render;
-      console.log(render)
       options.staticRenderFns = staticRenderFns;
 
       /* istanbul ignore if */
