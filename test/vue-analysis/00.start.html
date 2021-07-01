@@ -30,16 +30,23 @@
     el: '#app',
     data() {
       return {
+        person: {
+          name: 'tom',
+          age: 20,
+          height: 180
+        }
       }
     },
     template: `
-      <div class="main-container">
-        <h1>container 内的元素</h1>
-        <fufei-component></fufei-component>
-        <fufei-component></fufei-component>
-        <fufei-component></fufei-component>
+      <div>
+        <h1>人的信息</h1>
+        <h1>名字：{{person.name}}</h1>
+        <fufei-component name="嘻嘻嘻" @click="doSomething"></fufei-component>
       </div>
-    `
+    `,
+    methods: {
+      doSomething(){}
+    }
   })
 </script>
 </body>
