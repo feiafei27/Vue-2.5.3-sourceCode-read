@@ -437,6 +437,7 @@ export function stateMixin (Vue: Class<Component>) {
     options?: Object
   ): Function {
     const vm: Component = this
+
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options)
     }
