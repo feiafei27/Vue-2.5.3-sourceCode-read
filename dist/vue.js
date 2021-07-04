@@ -10550,8 +10550,10 @@ var createCompiler = createCompilerCreator(function baseCompile (
   console.log("2:")
   console.log(ast)
   optimize(ast, options);
-  var code = generate(ast, options);
   console.log("3:")
+  console.log(ast)
+  var code = generate(ast, options);
+  console.log("4:")
   console.log(code)
   return {
     ast: ast,
