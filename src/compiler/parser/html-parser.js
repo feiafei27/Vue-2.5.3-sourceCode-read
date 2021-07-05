@@ -222,6 +222,7 @@ export function parseHTML (html, options) {
     html = html.substring(n)
   }
 
+  // 用于解析开始标签
   function parseStartTag () {
     const start = html.match(startTagOpen)
     if (start) {
@@ -245,6 +246,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  // 进一步解析 parseStartTag 返回的对象，并且调用 options.start 回调函数
   function handleStartTag (match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash
@@ -297,6 +299,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  // 处理结束标签，并会调用回调函数
   function parseEndTag (tagName, start, end) {
     let pos, lowerCasedTagName
     if (start == null) start = index
