@@ -8873,6 +8873,8 @@ function parse (
   template,
   options
 ) {
+  debugger;
+
   warn$2 = options.warn || baseWarn;
 
   platformIsPreTag = options.isPreTag || no;

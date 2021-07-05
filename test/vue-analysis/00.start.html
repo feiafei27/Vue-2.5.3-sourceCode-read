@@ -15,15 +15,13 @@ new Vue({
   el: '#app',
   data() {
     return {
-      person: {
-        name: 'tom'
-      }
+      name: 'tom'
     }
   },
 template: `
-  <div>
-    <h1>我是静态的</h1>
-    <h1>名字:{{person.name}}</h1>
+  <div class="container">
+    <h1>我是静态文本</h1>
+    <h1>名字:{{name}}</h1>
   </div>
 `
 })
