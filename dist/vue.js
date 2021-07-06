@@ -2769,9 +2769,6 @@ function mountComponent (
   }
   callHook(vm, 'beforeMount');
 
-  console.log("**mountComponent**")
-  console.log(vm)
-
   var updateComponent;
   /* istanbul ignore if */
   if ("development" !== 'production' && config.performance && mark) {
@@ -8873,8 +8870,6 @@ function parse (
   template,
   options
 ) {
-  debugger;
-
   warn$2 = options.warn || baseWarn;
 
   platformIsPreTag = options.isPreTag || no;
@@ -9043,6 +9038,7 @@ function parse (
     },
 
     chars: function chars (text) {
+      debugger
       if (!currentParent) {
         {
           if (text === template) {

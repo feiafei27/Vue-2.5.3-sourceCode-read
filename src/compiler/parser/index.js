@@ -111,7 +111,7 @@ export function parse (
     canBeLeftOpenTag: options.canBeLeftOpenTag,
     shouldDecodeNewlines: options.shouldDecodeNewlines,
     shouldKeepComment: options.comments,
-    // 下面的回调函数用于 AST 元素的生成
+    // 下面的回调函数用于 AST 元素的生成和 AST 树结构的维护
     // 针对开始标签
     start (tag, attrs, unary) {
       // check namespace.
@@ -235,6 +235,7 @@ export function parse (
       } else {
         endPre(element)
       }
+
       // apply post-transforms
       for (let i = 0; i < postTransforms.length; i++) {
         postTransforms[i](element, options)
@@ -284,7 +285,7 @@ export function parse (
       ) {
         return
       }
-      // 获取到父元素的 children 属性数组
+      // 获取到父元素的 children 属性
       const children = currentParent.children
       text = inPre || text.trim()
         ? isTextTag(currentParent) ? text : decodeHTMLCached(text)

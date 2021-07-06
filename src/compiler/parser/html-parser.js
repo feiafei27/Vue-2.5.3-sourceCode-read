@@ -309,7 +309,9 @@ export function parseHTML (html, options) {
 
     // Find the closest opened tag of the same type
     if (tagName) {
-      // stack 栈从后往前找，寻找与 lowerCasedTagName 相同的标签的下标
+      // stack 栈从上往下找，寻找与 lowerCasedTagName 相同的标签的下标
+      // 一般情况下，相同的元素都是在栈顶，但这是DOM嵌套规范的情况下，
+      // 有时候，不规范的嵌套，例如：<div><span></div>，在处理 </div> 的时候，与其对应的标签就不在栈顶
       for (pos = stack.length - 1; pos >= 0; pos--) {
         if (stack[pos].lowerCasedTag === lowerCasedTagName) {
           break
@@ -317,23 +319,36 @@ export function parseHTML (html, options) {
       }
     } else {
       // If no tag name is provided, clean shop
+      // 此处对应 tagName 是 undefined 的情况，在这里不做讨论
       pos = 0
     }
 
-    // 如果在栈中找到了与 lowerCasedTagName 相同标签的话，
+    // 如果 pos > 0，说明在栈中找到了与 lowerCasedTagName 相同的标签
     if (pos >= 0) {
-      // Close all the open elements, up the stack
+      // 从栈顶往栈底遍历，直到当前处理标签对应开始标签的位置（pos）
       for (let i = stack.length - 1; i >= pos; i--) {
-        // 用于处理类似于
-        // <div><h1>Hello</h1>，某些元素没有闭合标签的问题，打印出警告。
+        // 用于处理类似于下面这种情况
+        // <div><h1>Hello</h1>，h1 没有闭合标签，打印出警告。
         if (process.env.NODE_ENV !== 'production' &&
           (i > pos || !tagName) &&
           options.warn
         ) {
+          // 打印警告
           options.warn(
             `tag <${stack[i].tag}> has no matching end tag.`
           )
         }
+        // <div><h1>Hello</h1>，当处理 h1 闭合标签的时候，栈中有两个元素
+        //     栈顶
+        //   -------
+        //      h1
+        //     div
+        //   -------
+        //     栈底
+        // 即使模板字符串中没有 h1 的闭合标签，在这里也会为其执行 end 回调函数，
+        // 为 h1 执行 end 回调函数之后，也会为 div 执行 end 回调函数
+        // 关于这一点，大家可以做个测试，在 Vue 的模板中写一个没有闭合标签的元素，
+        // Vue 会发出警告，而且会为其添加闭合元素，添加闭合元素的源码级别实现就在这里
         if (options.end) {
           options.end(stack[i].tag, start, end)
         }
@@ -342,11 +357,15 @@ export function parseHTML (html, options) {
       // Remove the open elements from the stack
       stack.length = pos
       lastTag = pos && stack[pos - 1].tag
+    // 下面处理在栈中没有找到对应开始标签元素的情况
     } else if (lowerCasedTagName === 'br') {
+      // 针对处理这种模板字符串：<div></br></div>
       if (options.start) {
         options.start(tagName, [], true, start, end)
       }
     } else if (lowerCasedTagName === 'p') {
+      // 针对处理这种模板字符串：<div></p></div>，会为 p 结束标签增加对应的 <p> 开始标签
+      // 真实的 DOM 会变成这样：<div><p></p></div>
       if (options.start) {
         options.start(tagName, [], false, start, end)
       }
