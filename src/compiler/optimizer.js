@@ -43,9 +43,6 @@ function markStatic (node: ASTNode) {
   node.static = isStatic(node)
   if (node.type === 1) {
     // 对子节点进行静态节点标志的处理，因为只有元素节点才有子节点，所以用 if (node.type === 1) 进行判断
-    // do not make component slot content static. this avoids
-    // 1. components not able to mutate slot nodes
-    // 2. static slot content fails for hot-reloading
     // 不要将自定义组件标记为静态节点，所以在这里，直接 return
     if (
       !isPlatformReservedTag(node.tag) &&
@@ -129,11 +126,11 @@ function isStatic (node: ASTNode): boolean {
   // 一：如果该节点有 v-pre 指令的话，一定是静态节点。
   // 二：如果该节点没有 v-pre 指令的话，则必须满足一系列的条件才能是静态节点。
   //     (1)不能绑定动态数据
-  //     (2)不能有 v-if 和 v-for 指令
+  //     (2)不能使用 v-if、v-for 和 v-else 指令
   //     (3)不能是内建组件(slot、component)
   //     (4)必须是平台上面的标签，例如：web 端的 div、p等等。
   //     (5)不能是有 v-for 指令节点的子节点,
-  //     (6)node 中的 key 必须都是静态的 key(type、tag、attrsList、parent、children....)，不能有额外的 key
+  //     (6)节点的所有属性的 key 都满足静态 key
   return !!(node.pre || (
     !node.hasBindings && // no dynamic bindings
     !node.if && !node.for && // not v-if or v-for or v-else
