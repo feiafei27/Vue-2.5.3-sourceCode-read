@@ -16,7 +16,8 @@ new Vue({
   data() {
     return {
       name: 'tom',
-      isShow: true
+      isShow: true,
+      status: 1
     }
   },
   template: `
@@ -25,7 +26,9 @@ new Vue({
         <h1>我是标题</h1>
       </div>
       <div class="body">
-        <h1>名字：{{name}}</h1>
+        <h2 v-if="status == 1">名字1：{{name}}</h2>
+        <h3 v-else-if="status == 2">名字2：{{name}}</h3>
+        <h4 v-else>名字 other：{{name}}</h4>
       </div>
     </div>
   `
