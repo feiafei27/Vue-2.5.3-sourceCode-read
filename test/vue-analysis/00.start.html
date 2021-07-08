@@ -11,25 +11,18 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
-new Vue({
-  el: '#app',
-  data() {
-    return {
-      name: 'tom',
-      isShow: true
+
+  function createCompare(property) {
+    debugger
+    return function (obj1, obj2) {
+      return obj1[property] > obj2[property]
     }
-  },
-  template: `
-    <div class="container">
-<<<<<<< HEAD
-      <h1>名字：{{name}}</h1>
-=======
-      <h1>我是静态文本</h1>
-      <h1>名字:{{name}}</h1>
->>>>>>> origin/main
-    </div>
-  `
-})
+  }
+
+  let compare = createCompare('age')
+  console.log(compare({age: 10}, {age: 20}))
+
+
 </script>
 </body>
 </html>
