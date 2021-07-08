@@ -101,6 +101,8 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
       node.staticRoot = false
     }
     // 递归调用子节点
+    // 注意：如果当前节点被认定为静态根节点，就会 return，不会执行到下面的代码，
+    //      也就是说，一旦某个节点被认定为静态根节点，将不会再处理他的根节点
     if (node.children) {
       for (let i = 0, l = node.children.length; i < l; i++) {
         markStaticRoots(node.children[i], isInFor || !!node.for)
@@ -132,12 +134,12 @@ function isStatic (node: ASTNode): boolean {
   // 元素节点的判断稍微复杂一些，有很多种情况
   // 一：如果该节点有 v-pre 指令的话，一定是静态节点。
   // 二：如果该节点没有 v-pre 指令的话，则必须满足一系列的条件才能是静态节点。
-  //     (1)node.hasBindings 不能为 true。
-  //     (2)元素节点不能有 if 和 for属性。
+  //     (1)不能有动态绑定语法（v-,@,:）
+  //     (2)元素节点不能有 v-if 和 v-for 或者 v-else。
   //     (3)不能是内建组件(slot、component)
   //     (4)必须是平台上面的标签，例如：web 端的 div、p等等。
   //     (5)元素节点的父级节点不能是带 v-for 的 template,
-  //     (6)元素节点上不能出现额外的属性，只能包含规定的 AST 属性
+  //     (6)元素节点上不存在动态节点才会有的属性
   return !!(node.pre || (
     !node.hasBindings && // no dynamic bindings
     !node.if && !node.for && // not v-if or v-for or v-else
