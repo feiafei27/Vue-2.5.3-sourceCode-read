@@ -11,18 +11,28 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
-
-  function createCompare(property) {
-    debugger
-    return function (obj1, obj2) {
-      return obj1[property] > obj2[property]
-    }
-  }
-
-  let compare = createCompare('age')
-  console.log(compare({age: 10}, {age: 20}))
-
-
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        name: 'tom',
+        isShow: true,
+        status: 1
+      }
+    },
+    template: `
+      <div class="container">
+        <div class="header">
+          <h1>我是标题</h1>
+        </div>
+        <div class="body">
+          <h2 v-if="status == 1">名字1：{{name}}</h2>
+          <h3 v-else-if="status == 2">名字2：{{name}}</h3>
+          <h4 v-else>名字 other：{{name}}</h4>
+        </div>
+      </div>
+    `
+  })
 </script>
 </body>
 </html>

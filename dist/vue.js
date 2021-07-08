@@ -9038,7 +9038,6 @@ function parse (
     },
 
     chars: function chars (text) {
-      debugger
       if (!currentParent) {
         {
           if (text === template) {
@@ -10542,6 +10541,7 @@ var createCompiler = createCompilerCreator(function baseCompile (
   template,
   options
 ) {
+  debugger
   console.log("1:")
   console.log(template.trim())
   var ast = parse(template.trim(), options);

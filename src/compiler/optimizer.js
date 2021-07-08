@@ -43,9 +43,6 @@ function markStatic (node: ASTNode) {
   node.static = isStatic(node)
   if (node.type === 1) {
     // 对子节点进行静态节点标志的处理，因为只有元素节点才有子节点，所以用 if (node.type === 1) 进行判断
-    // do not make component slot content static. this avoids
-    // 1. components not able to mutate slot nodes
-    // 2. static slot content fails for hot-reloading
     // 不要将自定义组件标记为静态节点，所以在这里，直接 return
     if (
       !isPlatformReservedTag(node.tag) &&
@@ -63,7 +60,14 @@ function markStatic (node: ASTNode) {
         node.static = false
       }
     }
+    // 如果当前的节点绑定了 v-if 的话
     if (node.ifConditions) {
+      // 遍历除了它之外的存在于条件链的 AST 节点（可以看到是从下标 1 开始遍历的，而不是 0，下标 0 是 node 本身）
+      // 条件链是指这样的代码：
+      // <h2 v-if="status == 1">名字是小明</h2>
+      // <h3 v-else-if="status == 2">名字2：{{name}}</h3>
+      // <h4 v-else>名字是小山</h4>
+      // 如果条件链的某个分支节点不是静态节点的话，当前节点就不是静态节点，
       for (let i = 1, l = node.ifConditions.length; i < l; i++) {
         const block = node.ifConditions[i].block
         markStatic(block)
@@ -128,12 +132,12 @@ function isStatic (node: ASTNode): boolean {
   // 元素节点的判断稍微复杂一些，有很多种情况
   // 一：如果该节点有 v-pre 指令的话，一定是静态节点。
   // 二：如果该节点没有 v-pre 指令的话，则必须满足一系列的条件才能是静态节点。
-  //     (1)不能绑定动态数据
-  //     (2)不能有 v-if 和 v-for 指令
+  //     (1)node.hasBindings 不能为 true。
+  //     (2)元素节点不能有 if 和 for属性。
   //     (3)不能是内建组件(slot、component)
   //     (4)必须是平台上面的标签，例如：web 端的 div、p等等。
-  //     (5)不能是有 v-for 指令节点的子节点,
-  //     (6)node 中的 key 必须都是静态的 key(type、tag、attrsList、parent、children....)，不能有额外的 key
+  //     (5)元素节点的父级节点不能是带 v-for 的 template,
+  //     (6)元素节点上不能出现额外的属性，只能包含规定的 AST 属性
   return !!(node.pre || (
     !node.hasBindings && // no dynamic bindings
     !node.if && !node.for && // not v-if or v-for or v-else
