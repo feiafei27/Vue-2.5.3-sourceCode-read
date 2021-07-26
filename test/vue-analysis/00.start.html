@@ -15,15 +15,17 @@
     el: '#app',
     data() {
       return {
-        name: 'tom',
         isShow: true,
-        status: 1
+        names: ['小明', '小山', '小花']
       }
     },
     template: `
-      <div class="container">
-        <h2>名字：{{name}}</h2>
-      </div>
+  <div class="container">
+    <h1 v-if="isShow">我是标题</h1>
+    <ul>
+      <li v-for="item in names">{{item}}</li>
+    </ul>
+  </div>
     `
   })
 </script>
