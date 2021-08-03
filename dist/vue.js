@@ -9862,6 +9862,7 @@ function generate (
   ast,
   options
 ) {
+  debugger
   var state = new CodegenState(options);
   var code = ast ? genElement(ast, state) : '_c("div")';
   return {
@@ -10541,7 +10542,6 @@ var createCompiler = createCompilerCreator(function baseCompile (
   template,
   options
 ) {
-  debugger
   console.log("1:")
   console.log(template.trim())
   var ast = parse(template.trim(), options);
