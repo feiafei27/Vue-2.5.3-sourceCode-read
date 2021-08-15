@@ -1033,9 +1033,6 @@ function observe (value, asRootData) {
   return ob
 }
 
-obj.names = ['小明', '小红', '小山'];
-obj.names.push('alice');
-
 /**
  * Define a reactive property on an Object.
  */
