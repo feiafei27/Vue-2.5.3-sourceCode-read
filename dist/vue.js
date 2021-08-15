@@ -6531,6 +6531,7 @@ function createPatchFunction (backend) {
 
   // 在首次渲染和组件更新时调用
   return function patch (oldVnode, vnode, hydrating, removeOnly, parentElm, refElm) {
+    debugger
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) { invokeDestroyHook(oldVnode); }
       return
