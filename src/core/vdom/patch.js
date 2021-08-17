@@ -460,12 +460,14 @@ export function createPatchFunction (backend) {
     }
   }
 
-  // 新旧 VNode 相同的情况
+  // 更新节点的方法
   function patchVnode (oldVnode, vnode, insertedVnodeQueue, removeOnly) {
+    // 如果 oldVnode、vnode 是同一节点的话，则直接 return 即可，不同进行更新操作
     if (oldVnode === vnode) {
       return
     }
 
+    // 获取对比 vnode 对应的真实的 DOM 节点
     const elm = vnode.elm = oldVnode.elm
 
     if (isTrue(oldVnode.isAsyncPlaceholder)) {
@@ -477,10 +479,7 @@ export function createPatchFunction (backend) {
       return
     }
 
-    // reuse element for static trees.
-    // note we only do this if the vnode is cloned -
-    // if the new node is not cloned it means the render functions have been
-    // reset by the hot-reload-api and we need to do a proper re-render.
+    // 判断 oldVnode 和 vnode 是不是静态节点，如果是静态节点的话，直接 return
     if (isTrue(vnode.isStatic) &&
       isTrue(oldVnode.isStatic) &&
       vnode.key === oldVnode.key &&
@@ -498,6 +497,7 @@ export function createPatchFunction (backend) {
       i(oldVnode, vnode)
     }
 
+    // 获取新旧 vnode 的 children
     const oldCh = oldVnode.children
     const ch = vnode.children
     if (isDef(data) && isPatchable(vnode)) {
