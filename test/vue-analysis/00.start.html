@@ -15,14 +15,12 @@
     el: '#app',
     data() {
       return {
-        title: '我是标题',
-        isShow: true,
-        names: ['小明', '小山', '小花']
+        isShow: false
       }
     },
     template: `
-      <div class="container">
-        Hello<span>111111</span>
+      <div id="app">
+        <h1 v-show="isShow">Hello Vue</h1>
       </div>
     `
   })

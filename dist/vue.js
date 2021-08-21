@@ -6531,10 +6531,11 @@ function createPatchFunction (backend) {
 
   // 在首次渲染和组件更新时调用
   return function patch (oldVnode, vnode, hydrating, removeOnly, parentElm, refElm) {
-    console.log('---------------------------')
+    console.log("--------------- patch ---------------")
+    console.log("--------------- oldVnode ---------------")
     console.log(oldVnode)
+    console.log("--------------- vnode ---------------")
     console.log(vnode)
-    console.log('---------------------------')
     if (isUndef(vnode)) {
       if (isDef(oldVnode)) { invokeDestroyHook(oldVnode); }
       return
@@ -10614,6 +10615,7 @@ function generate (
 }
 
 function genElement (el, state) {
+  debugger
   // 针对不同的情况，进入不同的分支
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state)
@@ -11329,11 +11331,15 @@ var createCompiler = createCompilerCreator(
   ) {
     // 1，解析器。将模板字符串转换成抽象语法树
     var ast = parse(template.trim(), options);
+    console.log("--------------- 抽象语法树 ---------------")
+    console.log(ast)
     // 2，优化器。遍历抽象语法树，标记静态节点，
     // 因为静态节点是不会变化的，所以重新渲染视图的时候，能够直接跳过静态节点，提升效率。
     optimize(ast, options);
     // 3，代码生成器。使用抽象语法树生成渲染函数字符串
     var code = generate(ast, options);
+    console.log("--------------- 代码字符串 ---------------")
+    console.log(code)
     return {
       ast: ast,
       render: code.render,
