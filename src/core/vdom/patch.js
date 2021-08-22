@@ -72,6 +72,14 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
 export function createPatchFunction (backend) {
   let i, j
   const cbs = {}
+  //cbs = {
+  //   create: [],
+  //   activate: [],
+  //   update: [],
+  //   remove: [],
+  //   destroy: []
+  // }
+  // 后面的数组用于保存对应 hook 在（directives、ref、attrs、class、dom-props、events、styles、transition）对象中对应的 hook 函数
 
   const { modules, nodeOps } = backend
 
