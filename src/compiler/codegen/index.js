@@ -134,6 +134,7 @@ export function genIf (
 ): string {
   // ifProcessed 属性用于判断 el 的 v-if 有没有被处理过，避免重复处理。
   el.ifProcessed = true // avoid recursion
+  // 调用 genIfConditions 函数进行代码字符串的生成
   return genIfConditions(el.ifConditions.slice(), state, altGen, altEmpty)
 }
 

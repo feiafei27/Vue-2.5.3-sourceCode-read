@@ -1,10 +1,8 @@
 <template>
   <div id="app">
-    <div class="container">
-      <h1 v-if="isShow">h1 isShow: true</h1>
-      <h2 v-if="!isShow">h2 isShow: false</h2>
-    </div>
-    <button @click="changeIsShow">change isShow</button>
+    <h1 v-if="score >= 80">优秀</h1>
+    <h2 v-else-if="score >= 60">及格</h2>
+    <h3 v-else>不及格</h3>
   </div>
 </template>
 <script>
@@ -12,13 +10,9 @@
     name: 'App',
     data(){
       return {
-        isShow: true
+        score: 60
       }
     },
-    methods: {
-      changeIsShow(){
-        this.isShow = !this.isShow
-      }
-    }
+    methods: {}
   }
 </script>
