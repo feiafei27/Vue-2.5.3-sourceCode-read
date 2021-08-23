@@ -376,135 +376,135 @@ export function createPatchFunction (backend) {
     }
   }
 
-function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
-  // 标识 "旧前" 的下标
-  let oldStartIdx = 0
-  // 标识 "新前" 的下标
-  let newStartIdx = 0
-  // 标识 "旧后" 的下标
-  let oldEndIdx = oldCh.length - 1
-  // 标识 "新后" 的下标
-  let newEndIdx = newCh.length - 1
+  function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
+    // 标识 "旧前" 的下标
+    let oldStartIdx = 0
+    // 标识 "新前" 的下标
+    let newStartIdx = 0
+    // 标识 "旧后" 的下标
+    let oldEndIdx = oldCh.length - 1
+    // 标识 "新后" 的下标
+    let newEndIdx = newCh.length - 1
 
-  // "旧前" 节点
-  let oldStartVnode = oldCh[0]
-  // "旧后" 节点
-  let oldEndVnode = oldCh[oldEndIdx]
-  // "新前" 节点
-  let newStartVnode = newCh[0]
-  // "新后" 节点
-  let newEndVnode = newCh[newEndIdx]
+    // "旧前" 节点
+    let oldStartVnode = oldCh[0]
+    // "旧后" 节点
+    let oldEndVnode = oldCh[oldEndIdx]
+    // "新前" 节点
+    let newStartVnode = newCh[0]
+    // "新后" 节点
+    let newEndVnode = newCh[newEndIdx]
 
-  let oldKeyToIdx, idxInOld, vnodeToMove, refElm
+    let oldKeyToIdx, idxInOld, vnodeToMove, refElm
 
-  // removeOnly is a special flag used only by <transition-group>
-  // to ensure removed elements stay in correct relative positions
-  // during leaving transitions
-  const canMove = !removeOnly
+    // removeOnly is a special flag used only by <transition-group>
+    // to ensure removed elements stay in correct relative positions
+    // during leaving transitions
+    const canMove = !removeOnly
 
-  // 因为优化策略 1 的存在，所以循环的方向就不能是从左到右，而是从节点列表的两边到中间
-  // 这里使用四个变量实现从两边到中间的逻辑，
-  // 每处理一组 "新老” 节点，就会将 "前" 节点向后移动一位，将 "后" 节点向前移动一位。
-  // 如果 newChildren 和 oldChildren 两个节点有一个循环完毕，while() 会就结束，此时就有两种情况需要说明。
-  // 1，如果 while() 循环结束，newChildren 还有未处理的节点，则这些未处理的节点都是新增节点，需要进行创建和插入的操作。
-  // 2，如果 while() 循环结束，oldChildren 还有未处理的节点，则这些未处理的节点都是要删除的节点，从 DOM 中将它们删除即可。
-  while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-    if (isUndef(oldStartVnode)) {
-      oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
-    } else if (isUndef(oldEndVnode)) {
-      oldEndVnode = oldCh[--oldEndIdx]
-    } else if (sameVnode(oldStartVnode, newStartVnode)) {
-      // 新前和旧前比较
-      patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue)
-      oldStartVnode = oldCh[++oldStartIdx]
-      newStartVnode = newCh[++newStartIdx]
-    } else if (sameVnode(oldEndVnode, newEndVnode)) {
-      // 新后和旧后比较
-      patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue)
-      oldEndVnode = oldCh[--oldEndIdx]
-      newEndVnode = newCh[--newEndIdx]
-    } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
-      // 新后和旧前比较
-      patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue)
-      canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
-      oldStartVnode = oldCh[++oldStartIdx]
-      newEndVnode = newCh[--newEndIdx]
-    } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
-      // 新前和旧后比较
-      patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue)
-      canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
-      oldEndVnode = oldCh[--oldEndIdx]
-      newStartVnode = newCh[++newStartIdx]
-    } else {
-      // 如果上面的优化策略 1 没有找到目标旧子节点的话，则开始进行第二种优化策略
-      // oldKeyToIdx 就是上文所说的 map 对象，它是由 createKeyToOldIdx 方法生成的
-      if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
-      // idxInOld 是目标旧子节点在 oldChildren 中的下标
-      idxInOld = isDef(newStartVnode.key)
-        // 如果新子节点中定义了 key 属性的话，则直接从 oldKeyToIdx 对象中获取对应旧子节点在 oldChildren 中的下标
-        ? oldKeyToIdx[newStartVnode.key]
-        // 如果新子节点中没有定义 key 属性的话，此时说明第二种优化策略也无法实现效果了
-        // 此时需要循环旧子节点列表寻找目标旧子节点，实现的逻辑在 findIdxInOld 方法中
-        : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
-      if (isUndef(idxInOld)) { // New element
-        // 如果目标旧子节点的下标没有找到的话，说明当前循环的节点是新增节点，进行创建和插入操作即可
-        createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm)
+    // 因为优化策略 1 的存在，所以循环的方向就不能是从左到右，而是从节点列表的两边到中间
+    // 这里使用四个变量实现从两边到中间的逻辑，
+    // 每处理一组 "新老” 节点，就会将 "前" 节点向后移动一位，将 "后" 节点向前移动一位。
+    // 如果 newChildren 和 oldChildren 两个节点有一个循环完毕，while() 会就结束，此时就有两种情况需要说明。
+    // 1，如果 while() 循环结束，newChildren 还有未处理的节点，则这些未处理的节点都是新增节点，需要进行创建和插入的操作。
+    // 2，如果 while() 循环结束，oldChildren 还有未处理的节点，则这些未处理的节点都是要删除的节点，从 DOM 中将它们删除即可。
+    while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+      if (isUndef(oldStartVnode)) {
+        oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
+      } else if (isUndef(oldEndVnode)) {
+        oldEndVnode = oldCh[--oldEndIdx]
+      } else if (sameVnode(oldStartVnode, newStartVnode)) {
+        // 新前和旧前比较
+        patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue)
+        oldStartVnode = oldCh[++oldStartIdx]
+        newStartVnode = newCh[++newStartIdx]
+      } else if (sameVnode(oldEndVnode, newEndVnode)) {
+        // 新后和旧后比较
+        patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue)
+        oldEndVnode = oldCh[--oldEndIdx]
+        newEndVnode = newCh[--newEndIdx]
+      } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
+        // 新后和旧前比较
+        patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue)
+        canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm))
+        oldStartVnode = oldCh[++oldStartIdx]
+        newEndVnode = newCh[--newEndIdx]
+      } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
+        // 新前和旧后比较
+        patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue)
+        canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
+        oldEndVnode = oldCh[--oldEndIdx]
+        newStartVnode = newCh[++newStartIdx]
       } else {
-        // 如果获取到下标的话，从 oldChildren 中获取目标旧子节点 — vnodeToMove
-        vnodeToMove = oldCh[idxInOld]
-        /* istanbul ignore if */
-        if (process.env.NODE_ENV !== 'production' && !vnodeToMove) {
-          warn(
-            'It seems there are duplicate keys that is causing an update error. ' +
-            'Make sure each v-for item has a unique key.'
-          )
-        }
-        // 判断对比的新老节点是不是同一节点
-        if (sameVnode(vnodeToMove, newStartVnode)) {
-          // 如果是的话，进行更新节点的操作
-          patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue)
-          // 因为旧子节点已经处理过了，所以需要将 oldCh[idxInOld] 设置为 undefined，防止出现重复处理的情况
-          oldCh[idxInOld] = undefined
-          canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
-        } else {
-          // 如果程序员给子节点标注的 key 属性不规范的话，就有可能出现 key 相同，但根本不是同一节点的情况，
-          // 此时将当前循环的新子节点当做新增节点接口
-          // same key but different element. treat as new element
+        // 如果上面的优化策略 1 没有找到目标旧子节点的话，则开始进行第二种优化策略
+        // oldKeyToIdx 就是上文所说的 map 对象，它是由 createKeyToOldIdx 方法生成的
+        if (isUndef(oldKeyToIdx)) oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
+        // idxInOld 是目标旧子节点在 oldChildren 中的下标
+        idxInOld = isDef(newStartVnode.key)
+          // 如果新子节点中定义了 key 属性的话，则直接从 oldKeyToIdx 对象中获取对应旧子节点在 oldChildren 中的下标
+          ? oldKeyToIdx[newStartVnode.key]
+          // 如果新子节点中没有定义 key 属性的话，此时说明第二种优化策略也无法实现效果了
+          // 此时需要循环旧子节点列表寻找目标旧子节点，实现的逻辑在 findIdxInOld 方法中
+          : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
+        if (isUndef(idxInOld)) { // New element
+          // 如果目标旧子节点的下标没有找到的话，说明当前循环的节点是新增节点，进行创建和插入操作即可
           createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm)
+        } else {
+          // 如果获取到下标的话，从 oldChildren 中获取目标旧子节点 — vnodeToMove
+          vnodeToMove = oldCh[idxInOld]
+          /* istanbul ignore if */
+          if (process.env.NODE_ENV !== 'production' && !vnodeToMove) {
+            warn(
+              'It seems there are duplicate keys that is causing an update error. ' +
+              'Make sure each v-for item has a unique key.'
+            )
+          }
+          // 判断对比的新老节点是不是同一节点
+          if (sameVnode(vnodeToMove, newStartVnode)) {
+            // 如果是的话，进行更新节点的操作
+            patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue)
+            // 因为旧子节点已经处理过了，所以需要将 oldCh[idxInOld] 设置为 undefined，防止出现重复处理的情况
+            oldCh[idxInOld] = undefined
+            canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
+          } else {
+            // 如果程序员给子节点标注的 key 属性不规范的话，就有可能出现 key 相同，但根本不是同一节点的情况，
+            // 此时将当前循环的新子节点当做新增节点接口
+            // same key but different element. treat as new element
+            createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm)
+          }
         }
+        newStartVnode = newCh[++newStartIdx]
       }
-      newStartVnode = newCh[++newStartIdx]
+    }
+
+    if (oldStartIdx > oldEndIdx) {
+      // 1，如果 while() 循环结束，newChildren 还有未处理的节点，则这些未处理的节点都是新增节点，需要进行创建和插入的操作。
+      refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
+      addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
+    } else if (newStartIdx > newEndIdx) {
+      // 2，如果 while() 循环结束，oldChildren 还有未处理的节点，则这些未处理的节点都是要删除的节点，从 DOM 中将它们删除即可。
+      removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx)
     }
   }
 
-  if (oldStartIdx > oldEndIdx) {
-    // 1，如果 while() 循环结束，newChildren 还有未处理的节点，则这些未处理的节点都是新增节点，需要进行创建和插入的操作。
-    refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
-    addVnodes(parentElm, refElm, newCh, newStartIdx, newEndIdx, insertedVnodeQueue)
-  } else if (newStartIdx > newEndIdx) {
-    // 2，如果 while() 循环结束，oldChildren 还有未处理的节点，则这些未处理的节点都是要删除的节点，从 DOM 中将它们删除即可。
-    removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx)
+  // 创建 key map 对象的方法
+  function createKeyToOldIdx (children, beginIdx, endIdx) {
+    let i, key
+    const map = {}
+    for (i = beginIdx; i <= endIdx; ++i) {
+      key = children[i].key
+      if (isDef(key)) map[key] = i
+    }
+    return map
   }
-}
 
-// 创建 key map 对象的方法
-function createKeyToOldIdx (children, beginIdx, endIdx) {
-  let i, key
-  const map = {}
-  for (i = beginIdx; i <= endIdx; ++i) {
-    key = children[i].key
-    if (isDef(key)) map[key] = i
+  // 循环 oldChildren 旧子节点列表，查找目标旧子节点
+  function findIdxInOld (node, oldCh, start, end) {
+    for (let i = start; i < end; i++) {
+      const c = oldCh[i]
+      if (isDef(c) && sameVnode(node, c)) return i
+    }
   }
-  return map
-}
-
-// 循环 oldChildren 旧子节点列表，查找目标旧子节点
-function findIdxInOld (node, oldCh, start, end) {
-  for (let i = start; i < end; i++) {
-    const c = oldCh[i]
-    if (isDef(c) && sameVnode(node, c)) return i
-  }
-}
 
   // 更新节点的方法
   function patchVnode (oldVnode, vnode, insertedVnodeQueue, removeOnly) {
