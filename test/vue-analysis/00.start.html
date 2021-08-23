@@ -15,12 +15,17 @@
     el: '#app',
     data() {
       return {
-        isShow: false
+        name: 'tom'
+      }
+    },
+    methods: {
+      h1Click(){
+        console.log("Hello Vue")
       }
     },
     template: `
       <div id="app">
-        <h1 v-show="isShow">Hello Vue</h1>
+        <h1 v-text="name" @click="h1Click"></h1>
       </div>
     `
   })
