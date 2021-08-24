@@ -11,26 +11,24 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
-  new Vue({
-    el: '#app',
-    data() {
-      return {
-        name: 'tom'
-      }
-    },
-    methods: {
-      h1Click(){
-        console.log("Hello Vue")
-      }
-    },
-    template: `
-      <div id="app">
-        <h1 v-text="name" @click="h1Click"></h1>
-      </div>
-    `
-  })
+new Vue({
+  el: '#app',
+  data() {
+    return {
+      name: 'tom'
+    }
+  },
+  mounted(){
+    setInterval(() => {
+      this.name = `tom-${Math.random()}`
+    }, 1000)
+  },
+  template: `
+    <div id="app">
+      <h1 v-once>{{name}}</h1>
+    </div>
+  `
+})
 </script>
 </body>
 </html>
-
-

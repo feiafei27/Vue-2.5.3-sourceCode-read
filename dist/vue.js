@@ -10615,7 +10615,6 @@ function generate (
 }
 
 function genElement (el, state) {
-  debugger
   // 针对不同的情况，进入不同的分支
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state)
