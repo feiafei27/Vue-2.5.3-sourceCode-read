@@ -15,17 +15,18 @@ new Vue({
   el: '#app',
   data() {
     return {
-      name: 'tom'
+      isShow: true
     }
   },
-  mounted(){
-    setInterval(() => {
-      this.name = `tom-${Math.random()}`
-    }, 1000)
+  methods: {
+    changeIsShow(){
+      this.isShow = !this.isShow
+    }
   },
   template: `
     <div id="app">
-      <h1 v-once>{{name}}</h1>
+      <h1 v-show="isShow" style="display: none">Hello v-show</h1>
+      <button @click="changeIsShow">change isShow</button>
     </div>
   `
 })

@@ -8465,6 +8465,7 @@ function locateNode (vnode) {
 
 var show = {
   bind: function bind (el, ref, vnode) {
+    debugger
     var value = ref.value;
 
     vnode = locateNode(vnode);
@@ -8482,6 +8483,7 @@ var show = {
   },
 
   update: function update (el, ref, vnode) {
+    debugger
     var value = ref.value;
     var oldValue = ref.oldValue;
 
@@ -8512,6 +8514,7 @@ var show = {
     oldVnode,
     isDestroy
   ) {
+    debugger
     if (!isDestroy) {
       el.style.display = el.__vOriginalDisplay;
     }
