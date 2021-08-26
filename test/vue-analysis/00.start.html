@@ -14,19 +14,16 @@
 new Vue({
   el: '#app',
   data() {
-    return {
-      isShow: true
-    }
+    return {}
   },
   methods: {
-    changeIsShow(){
-      this.isShow = !this.isShow
+    btnClick(){
+      console.log("按钮点击")
     }
   },
   template: `
     <div id="app">
-      <h1 v-show="isShow" style="display: none">Hello v-show</h1>
-      <button @click="changeIsShow">change isShow</button>
+      <button @click.once="btnClick">click</button>
     </div>
   `
 })
