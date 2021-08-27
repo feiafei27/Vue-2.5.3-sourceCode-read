@@ -4998,6 +4998,7 @@ function initMixin (Vue) {
   //   this._init(options)
   // }
   Vue.prototype._init = function (options) {
+    debugger
     // vm 就是 Vue 的实例对象，在 _init 方法中会对 vm 进行一系列的初始化操作
     var vm = this;
     // 赋值唯一的 id

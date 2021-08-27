@@ -11,22 +11,40 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
-new Vue({
-  el: '#app',
-  data() {
-    return {}
-  },
-  methods: {
-    btnClick(){
-      console.log("按钮点击")
-    }
-  },
-  template: `
-    <div id="app">
-      <button @click.once="btnClick">click</button>
-    </div>
-  `
-})
+  Vue.component('component-a', {
+    template: '<h1>我是组件</h1>'
+  })
+
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+      }
+    },
+    mounted(){
+      this.$once("event1", () => {
+        console.log("event1")
+      })
+
+      this.$off('event1')
+
+      this.$emit("event1")
+    },
+    methods: {
+      nameChangeHandler(){},
+      btnClick(){
+        console.log("btn click")
+      }
+    },
+    template: `
+      <div id="app">
+        <button @click.once="btnClick">click</button>
+        <component-a @nameChange="nameChangeHandler"></component-a>
+        <component-a></component-a>
+        <component-a></component-a>
+      </div>
+    `
+  })
 </script>
 </body>
 </html>

@@ -34,6 +34,12 @@ export function initMixin (Vue: Class<Component>) {
     // a flag to avoid this being observed
     // 一个标记，用于防止 vm 变成响应式的数据
     vm._isVue = true
+    // 下面这个 if else 分支需要注意一下。
+    // 在 Vue 中，有两个时机会创建 Vue 实例，一个是 main.js 中手动执行的 new Vue({})，还有一个是当我们
+    // 在模板中使用组件时，每使用一个组件，就会创建与之相对应的 Vue 实例。也就是说 Vue 的实例有两种，一种是
+    // 手动调用的 new Vue，还有一种是组件的 Vue 实例。组件的 Vue 实例会进入下面的 if 分支，而手动调用的
+    // new Vue 会进入下面的 else 分支。
+    //
     // 合并 options，options 用于保存当前 Vue 组件能够使用的各种资源和配置，例如：组件、指令、过滤器等等
     if (options && options._isComponent) {
       // optimize internal component instantiation

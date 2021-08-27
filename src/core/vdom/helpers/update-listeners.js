@@ -3,6 +3,10 @@
 import { warn } from 'core/util/index'
 import { cached, isUndef } from 'shared/util'
 
+// normalizeEvent 函数的作用是解析绑定的事件有没有使用修饰符，
+//
+// 使用了修饰符的事件名字符串的前面会有专门的标识字符，
+// 例如：@click.once="btnOnceClick" 对应的事件名就是 "~click"。
 const normalizeEvent = cached((name: string): {
   name: string,
   once: boolean,
@@ -15,6 +19,17 @@ const normalizeEvent = cached((name: string): {
   name = once ? name.slice(1) : name
   const capture = name.charAt(0) === '!'
   name = capture ? name.slice(1) : name
+  // 返回解析完成的对象，name 属性是绑定的事件名
+  // once、capture、passive 属性用于标识该事件有没有使用相应的修饰符，
+  // 如果使用了的话，值就为 true，没有使用的话，值就为 false。
+  //
+  // 例如：@click.once="btnOnceClick"，则解析返回的对象如下所示：
+  // {
+  //   name: 'click',
+  //   once: true,
+  //   capture: false,
+  //   passive: false
+  // }
   return {
     name,
     once,
@@ -48,6 +63,8 @@ export function createFnInvoker (fns: Function | Array<Function>): Function {
 }
 
 // 对比 on 与 oldOn，然后根据对比的结果调用 add 方法或者 remove 方法执行绑定或解绑事件
+// 该函数的一大特点是：add 和 remove 函数与 updateListeners 函数解耦，它们作为参数传递到
+// updateListeners 方法中，updateListeners 方法主要做 on 与 oldOn 的比较。
 export function updateListeners (
   on: Object,
   oldOn: Object,
