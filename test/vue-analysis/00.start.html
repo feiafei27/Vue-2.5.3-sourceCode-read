@@ -19,6 +19,7 @@ new Vue({
   el: '#app',
   data() {
     return {
+      checked: true
     }
   },
   methods: {
@@ -28,7 +29,8 @@ new Vue({
   },
   template: `
     <div id="app">
-      <h1 v-on:click="nameChangeHandler">1111111</h1>
+      <input type="checkbox" id="checkbox" v-model="checked">
+      <label for="checkbox">{{ checked }}</label>
     </div>
   `
 })
