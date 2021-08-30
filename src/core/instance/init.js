@@ -106,6 +106,7 @@ function initInternalComponent (vm: Component, options: InternalComponentOptions
   opts.parent = options.parent
   opts.propsData = options.propsData
   opts._parentVnode = options._parentVnode
+  // 将 _parentListeners 保存到 vm.$options._parentListeners
   opts._parentListeners = options._parentListeners
   opts._renderChildren = options._renderChildren
   opts._componentTag = options._componentTag

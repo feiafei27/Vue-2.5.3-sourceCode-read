@@ -218,12 +218,14 @@ export function createComponentInstanceForVnode (
   refElm?: ?Node
 ): Component {
   const vnodeComponentOptions = vnode.componentOptions
+  // options 是创建组件 vue 实例的参数对象
   const options: InternalComponentOptions = {
     _isComponent: true,
     parent,
     propsData: vnodeComponentOptions.propsData,
     _componentTag: vnodeComponentOptions.tag,
     _parentVnode: vnode,
+    // 将 vnode.componentOptions.listeners 赋值到 options._parentListeners
     _parentListeners: vnodeComponentOptions.listeners,
     _renderChildren: vnodeComponentOptions.children,
     _parentElm: parentElm || null,
@@ -235,6 +237,7 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
+  // 创建组件对应的 vue 实例，并且以 options 为参数
   return new vnodeComponentOptions.Ctor(options)
 }
 

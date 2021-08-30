@@ -10,10 +10,14 @@ import {
 import { updateListeners } from '../vdom/helpers/index'
 
 export function initEvents (vm: Component) {
+  // 初始化 vue 实例中的 _events 属性，该属性用于保存：
+  // 1，vm.$on() 绑定的事件和响应函数。
+  // 2，父组件在子组件上绑定的事件和响应函数。
   vm._events = Object.create(null)
   vm._hasHookEvent = false
-  // init parent attached events
+  // 获取父组件在子组件上绑定的事件集合对象，{ eventName1: callback1, ...... }
   const listeners = vm.$options._parentListeners
+  // 如果父组件的确在子组件上绑定了事件的话，执行 updateComponentListeners 函数
   if (listeners) {
     updateComponentListeners(vm, listeners)
   }
@@ -21,6 +25,7 @@ export function initEvents (vm: Component) {
 
 let target: Component
 
+// 添加事件，借助 $once 和 $on 完成功能
 function add (event, fn, once) {
   if (once) {
     target.$once(event, fn)
@@ -29,6 +34,7 @@ function add (event, fn, once) {
   }
 }
 
+// 移除事件，借助 $off 完成功能
 function remove (event, fn) {
   target.$off(event, fn)
 }
@@ -111,7 +117,7 @@ export function eventsMixin (Vue: Class<Component>) {
     }
     // 在这里处理单个的 event 事件，通过 vm._events[event] 获取 event 事件的回调函数数组
     const cbs = vm._events[event]
-    // 如果 cbs 不存在的话，说明没有注册 event 事件，直接 return 返回即可
+    // 如果 cbs 不存在的话，说明没有注册 e vent 事件，直接 return 返回即可
     if (!cbs) {
       return vm
     }
