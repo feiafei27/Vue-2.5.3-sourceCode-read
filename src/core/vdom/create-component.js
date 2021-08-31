@@ -97,7 +97,7 @@ const componentVNodeHooks = {
 // [ 'init', 'prepatch', 'insert', 'destroy' ]
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
-// 用于将组件转换成 VNode
+// 创建组件的 vnode
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
@@ -272,7 +272,9 @@ function mergeHook (one: Function, two: Function): Function {
 function transformModel (options, data: any) {
   const prop = (options.model && options.model.prop) || 'value'
   const event = (options.model && options.model.event) || 'input'
+
   ;(data.props || (data.props = {}))[prop] = data.model.value
+
   const on = data.on || (data.on = {})
   if (isDef(on[event])) {
     on[event] = [data.model.callback].concat(on[event])

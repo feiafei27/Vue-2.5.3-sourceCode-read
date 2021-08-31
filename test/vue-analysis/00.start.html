@@ -12,27 +12,67 @@
 <script src="../../dist/vue.js"></script>
 <script>
 Vue.component('component-a', {
-  template: '<h1>我是组件</h1>'
+  template: `
+    <div>
+      <input :value="value" @input="updateValue">
+    </div>
+  `,
+  props: ['value'],
+  methods: {
+    updateValue(e) {
+      this.$emit('input', e.target.value)
+    }
+  }
 })
+
+// 用在自定义组件上
+let template1 = `
+  <div id="app">
+    <p>message is：{{message}}</p>
+    <component-a v-model="message"></component-a>
+  </div>
+`
+
+let template2 = `
+  <div id="app">
+    <p>message is：{{message}}</p>
+    <component-a :value="message" @input="inputHandler"></component-a>
+  </div>
+`
+
+// 用在 DOM 元素上
+let template3 = `
+  <div id="app">
+    <p>message is：{{message}}</p>
+    <input placeholder="edit me" v-model="message"/>
+  </div>
+`
+
+// 编译成 :value @input，再加上 v-model 指令的处理
+
+let template4 = `
+  <div id="app">
+    <p>message is：{{message}}</p>
+    <input placeholder="edit me" :value="message" @input="inputHandlerOriginal"/>
+  </div>
+`
 
 new Vue({
   el: '#app',
   data() {
     return {
-      checked: true
+      message: ""
     }
   },
   methods: {
-    nameChangeHandler(){
-      console.log("name change handler")
+    inputHandler(v){
+      this.message = v
+    },
+    inputHandlerOriginal(e){
+      this.message = e.target.value
     }
   },
-  template: `
-    <div id="app">
-      <input type="checkbox" id="checkbox" v-model="checked">
-      <label for="checkbox">{{ checked }}</label>
-    </div>
-  `
+  template: template1
 })
 </script>
 </body>
