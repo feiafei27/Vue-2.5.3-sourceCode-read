@@ -267,18 +267,29 @@ function mergeHook (one: Function, two: Function): Function {
   }
 }
 
-// transform component v-model info (value and callback) into
-// prop and event handler respectively.
+// 该函数用于处理 v-model 特性
 function transformModel (options, data: any) {
+  // 这里用于实现自定义组件中的 model 选项，可以自定义组件上的 v-model 被解析成的 prop 和 event
+  //
+  // 这里的 options 是自定义组件的配置对象，在这里，判断该组件有没有配置 model 选项，如果配置了的话，
+  // 再判断 model 选项中有没有配置 prop 和 event，如果也配置了的话，则取配置的 prop 和 event 作为
+  // v-model 会被解析的 prop 和 event。
+  // 如果没有配置的话，则 v-model 默认解析成 'value' prop 和 'input' event。
   const prop = (options.model && options.model.prop) || 'value'
   const event = (options.model && options.model.event) || 'input'
 
+  // 将 v-model 指定的值赋值到 data.props[prop] 中
+  // 例如 v-model="message"，message = 'hello'，则在这里，默认情况下，data.props.value = 'hello'
   ;(data.props || (data.props = {}))[prop] = data.model.value
 
+  // 将 v-model 对应的事件回调函数保存到 data.on[event] 中
   const on = data.on || (data.on = {})
+  // 因为 event 事件有可能已经存在，所以需要额外的处理
   if (isDef(on[event])) {
+    // 如果 event 事件已经存在的话，则将 data.on[event] 的属性值变成一个数组，数组中保存该事件所有的回调函数
     on[event] = [data.model.callback].concat(on[event])
   } else {
+    // 如果 event 还不存在的话，直接将 data.model.callback 赋值给 data.on[event] 即可
     on[event] = data.model.callback
   }
 }
