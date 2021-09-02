@@ -24,18 +24,21 @@ export default {
       setSelected(el, binding, vnode.context)
       el._vOptions = [].map.call(el.options, getValue)
     } else if (vnode.tag === 'textarea' || isTextInputType(el.type)) {
+      // 看这个分支
       el._vModifiers = binding.modifiers
       if (!binding.modifiers.lazy) {
-        // 如果没有使用 lazy 修饰符的话
-
-        // Safari < 10.2 & UIWebView doesn't fire compositionend when
-        // switching focus before confirming composition choice
-        // this also fixes the issue where some browsers e.g. iOS Chrome
-        // fires "change" instead of "input" on autocomplete.
         el.addEventListener('change', onCompositionEnd)
         if (!isAndroid) {
+          // compositionstart 事件触发时，调用 onCompositionStart 函数，
+          // 将 e.target.composing 设为 true
           el.addEventListener('compositionstart', onCompositionStart)
+          // compositionend 事件触发时，调用 onCompositionEnd 函数，
+          // 将 e.target.composing 设为 false，并且用代码触发 input 元素的 input 事件
+          // 这会触发执行 v-model 指令所翻译成的 input 回调函数，在这个回调函数中，更新状态
           el.addEventListener('compositionend', onCompositionEnd)
+          // 通过上面两个事件及回调函数，就可以保证在输入拼音字符的过程中，v-model 对应的状态不被改变，
+          // 这是因为在输入拼音字符的过程中，$event.target.composing 为 true，
+          // 只有当拼音输入完毕之后，$event.target.composing 才为 false
         }
         /* istanbul ignore if */
         if (isIE9) {
@@ -67,6 +70,25 @@ export default {
   }
 }
 
+function onCompositionStart (e) {
+  // 将 e.target.composing 属性设置为 true
+  e.target.composing = true
+}
+function onCompositionEnd (e) {
+  // prevent triggering an input event for no reason
+  if (!e.target.composing) return
+  // 将 e.target.composing 属性设置为 true
+  e.target.composing = false
+  // 用代码触发 input 事件
+  trigger(e.target, 'input')
+}
+// 触发事件的工具函数
+function trigger (el, type) {
+  const e = document.createEvent('HTMLEvents')
+  e.initEvent(type, true, true)
+  el.dispatchEvent(e)
+}
+////////////////////////////////////////////////////////////////////
 function setSelected (el, binding, vm) {
   actuallySetSelected(el, binding, vm)
   /* istanbul ignore if */
@@ -76,7 +98,6 @@ function setSelected (el, binding, vm) {
     }, 0)
   }
 }
-
 function actuallySetSelected (el, binding, vm) {
   const value = binding.value
   const isMultiple = el.multiple
@@ -111,30 +132,11 @@ function actuallySetSelected (el, binding, vm) {
     el.selectedIndex = -1
   }
 }
-
 function hasNoMatchingOption (value, options) {
   return options.every(o => !looseEqual(o, value))
 }
-
 function getValue (option) {
   return '_value' in option
     ? option._value
     : option.value
-}
-
-function onCompositionStart (e) {
-  e.target.composing = true
-}
-
-function onCompositionEnd (e) {
-  // prevent triggering an input event for no reason
-  if (!e.target.composing) return
-  e.target.composing = false
-  trigger(e.target, 'input')
-}
-
-function trigger (el, type) {
-  const e = document.createEvent('HTMLEvents')
-  e.initEvent(type, true, true)
-  el.dispatchEvent(e)
 }
