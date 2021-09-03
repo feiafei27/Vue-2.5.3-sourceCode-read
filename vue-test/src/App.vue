@@ -1,13 +1,17 @@
 <template>
   <div id="app">
-    <h1 v-if="score >= 80">优秀</h1>
-    <h2 v-else-if="score >= 60">及格</h2>
-    <h3 v-else>不及格</h3>
+    <h1>我是 app</h1>
+    <hello-world>
+      <h3>我是插槽</h3>
+    </hello-world>
   </div>
 </template>
 <script>
+  import HelloWorld from './components/HelloWorld'
+
   export default {
     name: 'App',
+    components: {HelloWorld},
     data(){
       return {
         score: 60

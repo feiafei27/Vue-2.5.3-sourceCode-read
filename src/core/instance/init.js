@@ -70,7 +70,7 @@ export function initMixin (Vue: Class<Component>) {
     initLifecycle(vm)
     // 初始化与事件有关的属性以及处理父组件绑定到当前组件的方法。
     initEvents(vm)
-    // 初始化与渲染有关的内容
+    // 初始化与插槽有关的内容
     initRender(vm)
     // 在 beforeCreate 回调函数中，访问不到实例中的数据，因为这些数据还没有初始化
     // 执行 beforeCreate 生命周期函数

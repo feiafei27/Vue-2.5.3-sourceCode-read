@@ -4998,6 +4998,7 @@ function initMixin (Vue) {
   //   this._init(options)
   // }
   Vue.prototype._init = function (options) {
+    debugger
     // vm 就是 Vue 的实例对象，在 _init 方法中会对 vm 进行一系列的初始化操作
     var vm = this;
     // 赋值唯一的 id
@@ -6531,6 +6532,7 @@ function createPatchFunction (backend) {
 
   // 在首次渲染和组件更新时调用
   return function patch (oldVnode, vnode, hydrating, removeOnly, parentElm, refElm) {
+    debugger
     console.log("--------------- patch ---------------")
     console.log("--------------- oldVnode ---------------")
     console.log(oldVnode)
@@ -7275,7 +7277,6 @@ function model (
   dir,
   _warn
 ) {
-  debugger
   warn$1 = _warn;
   var value = dir.value;
   var modifiers = dir.modifiers;
@@ -11329,6 +11330,7 @@ var createCompiler = createCompilerCreator(
     template,
     options
   ) {
+    debugger
     // 1，解析器。将模板字符串转换成抽象语法树
     var ast = parse(template.trim(), options);
     console.log("--------------- 抽象语法树 ---------------")

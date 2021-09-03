@@ -1,4 +1,5 @@
-import Vue from '../../dist/vue.js'
+import Vue from 'vue'
+// import Vue from '../../dist/vue.js'
 import App from './App.vue'
 import './registerServiceWorker'
 import router from './router'

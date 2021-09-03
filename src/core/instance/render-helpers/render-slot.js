@@ -25,6 +25,7 @@ export function renderSlot (
     }
     return scopedSlotFn(props) || fallback
   } else {
+    // 从 this.$slots 对象中获取指定插槽的数组，在这里 name == "default"
     const slotNodes = this.$slots[name]
     // warn duplicate slot usage
     if (slotNodes && process.env.NODE_ENV !== 'production') {
@@ -35,6 +36,8 @@ export function renderSlot (
       )
       slotNodes._rendered = true
     }
+    // 将 slotNodes 返回，如果 slotNodes 不存在的话，则返回 fallback
+    // fallback 是 VNode 节点的数组，是当前处理 <slot> 的后备内容
     return slotNodes || fallback
   }
 }

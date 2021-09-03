@@ -9,18 +9,19 @@
 <!-- app container -->
 <div id="app"></div>
 
-<script src="../../dist/vue.js"></script>
+<script src="../../dist/vue-2.6.14.js"></script>
 <script>
-Vue.component('component-a', {
+Vue.component('hello-world', {
   template: `
-    <div class="component_container">
-      <h2>我是组件</h2>
+    <div class="hello_world">
+      <h2>我是 HelloWorld 组件</h2>
+      <slot name="header"></slot>
       <slot></slot>
+      <slot name="footer"></slot>
     </div>
   `,
   methods: {}
 })
-
 
 new Vue({
   el: '#app',
@@ -31,9 +32,17 @@ new Vue({
   template: `
     <div class="app_container">
       <h1>我是APP</h1>
-      <component-a>
-        <h3>我是 slot</h3>
-      </component-a>
+      <hello-world>
+        <template v-slot:header>
+          <h3>header slot</h3>
+        </template>
+        <template v-slot:default>
+          <h4>default slot</h4>
+        </template>
+        <template v-slot:footer>
+          <h5>footer slot</h5>
+        </template>
+      </hello-world>
     </div>
   `
 })
