@@ -11,9 +11,12 @@ export function renderSlot (
   props: ?Object,
   bindObject: ?Object
 ): ?Array<VNode> {
+  // 从 vm.$scopedSlots 中获取指定插槽对应的函数，在这里 name = "default"
   const scopedSlotFn = this.$scopedSlots[name]
   if (scopedSlotFn) { // scoped slot
+    // 作用域插槽 代码执行到这里
     props = props || {}
+
     if (bindObject) {
       if (process.env.NODE_ENV !== 'production' && !isObject(bindObject)) {
         warn(
@@ -23,6 +26,8 @@ export function renderSlot (
       }
       props = extend(extend({}, bindObject), props)
     }
+    // 将 props 作为参数执行 scopedSlotFn 函数，并将函数的返回值 return 出去
+    // scopedSlotFn 函数的作用是创建并返回作用域插槽中节点的 vnode。
     return scopedSlotFn(props) || fallback
   } else {
     // 从 this.$slots 对象中获取指定插槽的数组，在这里 name == "default"

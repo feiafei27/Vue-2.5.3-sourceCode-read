@@ -2693,6 +2693,7 @@
     props,
     bindObject
   ) {
+    debugger
     var scopedSlotFn = this.$scopedSlots[name];
     var nodes;
     if (scopedSlotFn) {
@@ -6500,7 +6501,6 @@
     }
 
     return function patch (oldVnode, vnode, hydrating, removeOnly) {
-      debugger
       console.log("--------------- patch ---------------")
       console.log("--------------- oldVnode ---------------")
       console.log(oldVnode)

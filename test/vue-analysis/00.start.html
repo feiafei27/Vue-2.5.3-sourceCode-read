@@ -15,11 +15,16 @@ Vue.component('hello-world', {
   template: `
     <div class="hello_world">
       <h2>我是 HelloWorld 组件</h2>
-      <slot name="header"></slot>
-      <slot></slot>
-      <slot name="footer"></slot>
+      <slot v-bind:user="user"></slot>
     </div>
   `,
+  data() {
+    return {
+      user: {
+        name: 'tom'
+      }
+    }
+  },
   methods: {}
 })
 
@@ -33,14 +38,8 @@ new Vue({
     <div class="app_container">
       <h1>我是APP</h1>
       <hello-world>
-        <template v-slot:header>
-          <h3>header slot</h3>
-        </template>
-        <template v-slot:default>
-          <h4>default slot</h4>
-        </template>
-        <template v-slot:footer>
-          <h5>footer slot</h5>
+        <template v-slot:default="slotProps">
+          <h3>{{slotProps.user.name}}</h3>
         </template>
       </hello-world>
     </div>
