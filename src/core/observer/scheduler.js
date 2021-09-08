@@ -37,7 +37,7 @@ function resetSchedulerState () {
 }
 
 /**
- * 执行队列中 watcher 实例的 run 方法
+ * 执行队列中 watcher 实例的 run 方法，触发执行完之后，会对 queue 数组进行清空操作
  */
 function flushSchedulerQueue () {
   flushing = true

@@ -9,39 +9,31 @@
 <!-- app container -->
 <div id="app"></div>
 
-<script src="../../dist/vue-2.6.14.js"></script>
+<script src="../../dist/vue.js"></script>
 <script>
-Vue.component('hello-world', {
-  template: `
-    <div class="hello_world">
-      <h2>我是 HelloWorld 组件</h2>
-      <slot v-bind:user="user"></slot>
-    </div>
-  `,
-  data() {
-    return {
-      user: {
-        name: 'tom'
-      }
-    }
-  },
-  methods: {}
-})
-
 new Vue({
   el: '#app',
   data() {
-    return {}
+    return {
+      isShow: true
+    }
   },
-  methods: {},
+  methods: {
+    changeIsShow(){
+      this.$nextTick(function () {
+        let appDiv = document.getElementById("app")
+        console.log(appDiv)
+      })
+
+      this.isShow = !this.isShow
+    }
+  },
   template: `
-    <div class="app_container">
-      <h1>我是APP</h1>
-      <hello-world>
-        <template v-slot:default="slotProps">
-          <h3>{{slotProps.user.name}}</h3>
-        </template>
-      </hello-world>
+    <div id="app">
+      <h1 v-if="isShow" id="h1Element">h1 文本</h1>
+      <h2 v-if="!isShow" id="h2Element">h2 文本</h2>
+
+      <button @click="changeIsShow">change isShow</button>
     </div>
   `
 })
