@@ -157,7 +157,7 @@ function mergeHook (
   // 很值得我们借鉴和学习
 }
 
-// 生命周期函数的合并策略
+// 生命周期函数数组
 // const LIFECYCLE_HOOKS = [
 //   'beforeCreate',
 //   'created',
@@ -171,6 +171,7 @@ function mergeHook (
 //   'deactivated',
 //   'errorCaptured'
 // ]
+// 生命周期函数的合并策略
 LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook
 })
@@ -382,7 +383,6 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
 
 /**
  * 将两个 options 对象合并成一个
- * 该方法是一个核心的功能方法，主要在两个地方使用：(1)new Vue()的时候使用；(2)组件集成的时候使用
  */
 export function mergeOptions (
   parent: Object,
@@ -402,21 +402,24 @@ export function mergeOptions (
   normalizeProps(child, vm)
   normalizeInject(child, vm)
   normalizeDirectives(child)
-  // https://cn.vuejs.org/v2/api/#extends
-  // 允许声明扩展另一个组件 (可以是一个简单的选项对象或构造函数)
-  // 这主要是为了便于扩展单文件组件
+
+  // 对应官方文档点击这里：https://cn.vuejs.org/v2/api/#extends
+  // 配置选项中可以使用 extends 配置项，如果使用了该配置项的话，底层则递归调用 mergeOptions 方法，
+  // 对 parent 和 extendsFrom 中的配置项进行合并
   const extendsFrom = child.extends
   if (extendsFrom) {
-    // 如果用户配置了 extends 的话，在这里递归调用 mergeOptions，将这些 extend 都合并到 parent 中
     parent = mergeOptions(parent, extendsFrom, vm)
   }
-  // 下面的 child.mixins 和 child.extends 同理，一样是递归调用 mergeOptions 合并即可
+  // 对应官方文档点击这里：https://cn.vuejs.org/v2/api/#mixins
+  // 配置选项中可以使用 mixins 配置项，如果使用了该配置项的话，底层则递归调用 mergeOptions 方法，
+  // 对 parent 和 child.mixins[i] 中的配置项进行合并
   if (child.mixins) {
     for (let i = 0, l = child.mixins.length; i < l; i++) {
       parent = mergeOptions(parent, child.mixins[i], vm)
     }
   }
-  // 创建最终要返回的空对象
+
+  // 开始进行真正的合并逻辑
   const options = {}
   let key
   for (key in parent) {
@@ -428,9 +431,10 @@ export function mergeOptions (
       mergeField(key)
     }
   }
-  // 用于合并某一个 key 的方法
+  // 用于合并 parent options 和 child options 对象中某一个 key 的方法
   function mergeField (key) {
-    // strat 是指合并策略
+    // strats 是指合并策略集
+    // strat 是指特定选项的合并策略，是一个函数
     const strat = strats[key] || defaultStrat
     // 使用这个合并策略对 parent 和 child 中指定的 key 进行合并
     options[key] = strat(parent[key], child[key], vm, key)
