@@ -4562,6 +4562,8 @@ function createComponent (
   children,
   tag
 ) {
+  // debugger point
+  debugger
   if (isUndef(Ctor)) {
     return
   }
@@ -4578,6 +4580,7 @@ function createComponent (
     // 借助 Vue.extend（Vue.extend 的具体用法可以看官网的api）将 Ctor 对象转换成 Vue 构造器的子类
     Ctor = baseCtor.extend(Ctor);
   }
+  console.log(Ctor.options)
 
   // if at this stage it's not a constructor or an async component factory,
   // reject.

@@ -11,35 +11,28 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
+  var ComponentA = {
+    template: `
+      <h1>我是 ComponentA</h1>
+    `
+  }
+
   let app = new Vue({
     el: '#app',
     data() {
       return {
-        isShow: true
       }
     },
-    methods: {
-      changeIsShow(){
-        this.$nextTick(function () {
-          let appDiv = document.getElementById("app")
-          console.log(appDiv)
-        })
-
-        this.isShow = !this.isShow
-      }
+    components: {
+      'component-a': ComponentA
     },
+    methods: {},
     template: `
       <div id="app">
-        <h1 v-if="isShow" id="h1Element">h1 文本</h1>
-        <h2 v-if="!isShow" id="h2Element">h2 文本</h2>
-
-        <button @click="changeIsShow">change isShow</button>
+        <component-a></component-a>
       </div>
     `
   })
-
-  console.log("------ app ------")
-  console.log(app)
 </script>
 </body>
 </html>
