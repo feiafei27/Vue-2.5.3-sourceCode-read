@@ -1,22 +1,18 @@
-// 以下代码会得到什么样的输出结果？
-console.log('1');
+function toArray (list, start) {
+  start = start || 0
+  let i = list.length - start
+  const ret = new Array(i)
+  while (i--) {
+    ret[i] = list[i + start]
+  }
+  return ret
+}
 
-setTimeout(function() {
-  console.log('2');
-  Promise.resolve().then(function() {
-    console.log('3');
-  });
-}, 0);
-setTimeout(function() {
-  console.log('7');
-  Promise.resolve().then(function() {
-    console.log('8');
-  });
-}, 0);
+function add(number1, number2){
+  console.log(toArray(arguments, 1))
 
-Promise.resolve().then(function() {
-  console.log('4');
-}).then(function() {
-  console.log('5');
-});
-console.log('6');
+  return number1 + number2
+}
+
+add(1, 10)
+

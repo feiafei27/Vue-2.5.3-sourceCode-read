@@ -49,7 +49,7 @@ export function initAssetRegisters (Vue: GlobalAPI) {
         if (type === 'directive' && typeof definition === 'function') {
           definition = { bind: definition, update: definition }
         }
-        // 将处理好的资产保存到 options 对象中
+        // 将处理好的资产保存到 options 对象中，数据结构如下所示：
         // options: {
         //   components:{
         //     id1: definition1,
