@@ -67,7 +67,7 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
-      // 如果 template 是一个 DOM 节点的话，使用 innerHTML 属性获取该 DOM 节点的字符串形式
+      // 如果 template 选项没有配置的话，使用 innerHTML 属性获取 el 节点的字符串形式
       template = getOuterHTML(el)
     }
 

@@ -106,20 +106,29 @@ export function lifecycleMixin (Vue: Class<Component>) {
   // beforeDestroy 和 destroyed 的生命周期函数都是在这里触发执行的
   Vue.prototype.$destroy = function () {
     const vm: Component = this
+    // _isBeingDestroyed 变量用于防止实例被重复执行 $destroy 方法
+    // 如果 vm._isBeingDestroyed 值为 true 的话，则直接 return
     if (vm._isBeingDestroyed) {
       return
     }
+    // 触发执行 beforeDestroy 生命周期函数
     callHook(vm, 'beforeDestroy')
+    // 将 _isBeingDestroyed 属性设置为 true
     vm._isBeingDestroyed = true
-    // remove self from parent
+    // 解除当前 Vue 实例和父 Vue 实例的关系
     const parent = vm.$parent
     if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
       remove(parent.$children, vm)
     }
-    // teardown watchers
+
+    // 销毁当前实例的 render Watcher
     if (vm._watcher) {
+      // teardown() 方法用于将 watcher 实例从依赖的所有数据的 dep 实例中移除
       vm._watcher.teardown()
     }
+    // Vue 实例中除了 render Watcher，还有计算属性 Watcher 和侦听器 Watcher，
+    // 这些 Watcher 实例都保存在 vm._watchers 数组中，
+    // 遍历执行所有 Watcher 实例的 teardown 方法即可。
     let i = vm._watchers.length
     while (i--) {
       vm._watchers[i].teardown()
@@ -129,13 +138,15 @@ export function lifecycleMixin (Vue: Class<Component>) {
     if (vm._data.__ob__) {
       vm._data.__ob__.vmCount--
     }
-    // call the last hook...
+    // 将 _isDestroyed 设置为 true，表明 vm 已经被销毁了
     vm._isDestroyed = true
-    // invoke destroy hooks on current rendered tree
+    // 执行 vm 的 __patch__ （重新渲染）方法，__patch__ 方法的第二个参数是 null，
+    // 这会解除绑定的指令，移除组件的 DOM
     vm.__patch__(vm._vnode, null)
-    // fire destroyed hook
+    // 执行 destroyed 生命周期函数
     callHook(vm, 'destroyed')
     // turn off all instance listeners.
+    // 移除 vm 上绑定的事件
     vm.$off()
     // remove __vue__ reference
     if (vm.$el) {
