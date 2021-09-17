@@ -11,25 +11,33 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
-  var ComponentA = {
-    template: `
-      <h1>我是 ComponentA</h1>
-    `
-  }
+  Vue.filter('capitalize', function (value) {
+    if (!value) return ''
+    value = value.toString()
+    return value.charAt(0).toUpperCase() + value.slice(1)
+  })
+
+  Vue.filter('prefix', function (value) {
+    return `~${value}`
+  })
+
+  Vue.filter('suffix', function (value, word) {
+    return `${value}${word}`
+  })
 
   let app = new Vue({
     el: '#app',
     data() {
       return {
+        message: 'hello vue'
       }
-    },
-    components: {
-      'component-a': ComponentA
     },
     methods: {},
     template: `
       <div id="app">
-        <component-a></component-a>
+        <h3>{{message | capitalize}}</h3>
+        <h3>{{message | suffix('!')}}</h3>
+        <h3>{{message | capitalize | prefix}}</h3>
       </div>
     `
   })
