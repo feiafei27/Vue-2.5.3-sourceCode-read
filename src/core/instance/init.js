@@ -68,7 +68,7 @@ export function initMixin (Vue: Class<Component>) {
     vm._self = vm
     // 初始化与生命周期有关的内容
     initLifecycle(vm)
-    // 初始化与事件有关的属性以及处理父组件绑定到当前组件的方法。
+    // 初始化与事件有关的属性以及处理父组件绑定到当前组件的方法
     initEvents(vm)
     // 初始化与插槽和渲染有关的内容
     initRender(vm)
