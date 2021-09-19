@@ -443,12 +443,7 @@ export function mergeOptions (
 }
 
 /**
- * Resolve an asset.
- * This function is used because child instances need access
- * to assets defined in its ancestor chain.
- */
-/**
- * 该函数也很简单：从 options 中获取指定的 asset
+ * 该函数也很简单：从 options 中获取指定的资源并返回即可
  */
 export function resolveAsset (
   options: Object,
@@ -456,10 +451,11 @@ export function resolveAsset (
   id: string,
   warnMissing?: boolean
 ): any {
-  /* istanbul ignore if */
+  // 如果 id 不是字符串类型的话，直接 return
   if (typeof id !== 'string') {
     return
   }
+  // options 的数据结构如下所示：
   // options:{
   //   components:{},
   //   directives:{},
@@ -468,19 +464,24 @@ export function resolveAsset (
   const assets = options[type]
   // 判断 assets 对象本身有没有指定的 原始id、小驼峰id、大驼峰id
   // 如果有的话，直接返回
+  // 判断 assets 对象本身是否存在原始id属性，如果有的话，直接返回
   if (hasOwn(assets, id)) return assets[id]
+  // 判断 assets 对象本身是否存在小驼峰id属性，如果有的话，直接返回
   const camelizedId = camelize(id)
   if (hasOwn(assets, camelizedId)) return assets[camelizedId]
+  // // 判断 assets 对象本身是否存在大驼峰id属性，如果有的话，直接返回
   const PascalCaseId = capitalize(camelizedId)
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId]
-  // 判断 assets 的原型链上有没有指定的 原始id、小驼峰id、大驼峰id
+  // 如果 assets 对象本身 原始id、小驼峰id、大驼峰id 属性都不存在的话
+  // 则判断 assets 的原型链上有没有指定的 原始id、小驼峰id、大驼峰id 属性
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId]
   if (process.env.NODE_ENV !== 'production' && warnMissing && !res) {
-    // 如果没有获取到指定的 assets 的话，再次打印出警告
+    // 如果没有获取到指定资源的话，打印出警告
     warn(
       'Failed to resolve ' + type.slice(0, -1) + ': ' + id,
       options
     )
   }
+  // 返回获取到的资源，可以是组件、
   return res
 }
