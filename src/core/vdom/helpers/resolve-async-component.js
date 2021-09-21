@@ -210,6 +210,7 @@ export function resolveAsyncComponent (
           }
         }
 
+        // 处理 高级异步组件 中的 timeout
         // timeout 参数表示：timeout 毫秒之后，如果这一个异步组件还不是 resolved 状态的话，
         // 就将组件设为 error 状态，并重新渲染，渲染出 error 组件，借助 setTimeout 和 reject 方法实现功能
         if (isDef(res.timeout)) {
