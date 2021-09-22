@@ -34,10 +34,15 @@ function pruneCache (keepAliveInstance: any, filter: Function) {
   }
 }
 
+// 该方法用于移除 cache 中缓存的指定 vnode
 function pruneCacheEntry (
+  // 用于缓存 vnode 的对象
   cache: VNodeCache,
+  // 当前要移除 vnode 的 key
   key: string,
+  // 已缓存 vnode 的 key 集合
   keys: Array<string>,
+  // keep-alive 内当前渲染组件的 vnode
   current?: VNode
 ) {
   const cached = cache[key]
@@ -52,21 +57,32 @@ const patternTypes: Array<Function> = [String, RegExp, Array]
 
 export default {
   name: 'keep-alive',
+  // keep-alive 是一个抽象组件，抽象组件不会渲染成 DOM 元素，也不会出现在父组件链中
   abstract: true,
 
   props: {
+    // 缓存白名单
+    // 字符串或正则表达式。只有名称匹配的组件会被缓存。
     include: patternTypes,
+    // 缓存黑名单
+    // 字符串或正则表达式。任何名称匹配的组件都不会被缓存。
     exclude: patternTypes,
+    // 数字。最多可以缓存多少组件实例。
     max: [String, Number]
   },
 
   created () {
+    // 用于缓存 vnode 的对象
     this.cache = Object.create(null)
+    // 已缓存的 vnode 的 key 集合
     this.keys = []
   },
 
   destroyed () {
+    // 清空所有缓存的 vnode
+    // 使用 for in 遍历 this.cache 对象
     for (const key in this.cache) {
+      // 借助 pruneCacheEntry 方法移除缓存的 vnode
       pruneCacheEntry(this.cache, key, this.keys)
     }
   },
