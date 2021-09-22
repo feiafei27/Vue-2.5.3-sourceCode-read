@@ -11,33 +11,60 @@
 
 <script src="../../dist/vue.js"></script>
 <script>
-  Vue.filter('capitalize', function (value) {
-    if (!value) return ''
-    value = value.toString()
-    return value.charAt(0).toUpperCase() + value.slice(1)
+  Vue.component('A', {
+    template: `
+      <div class="a">
+        <h3>A Component</h3>
+      </div>
+    `,
+    name: 'A',
+    mounted() {
+      console.log('Component A mounted')
+    },
+    activated() {
+      console.log('Component A activated')
+    },
+    deactivated() {
+      console.log('Component A deactivated')
+    }
   })
 
-  Vue.filter('prefix', function (value) {
-    return `~${value}`
-  })
-
-  Vue.filter('suffix', function (value, word) {
-    return `${value}${word}`
+  Vue.component('B', {
+    template: `
+      <div class="b">
+        <h3>B Component</h3>
+      </div>
+    `,
+    name: 'B',
+    mounted() {
+      console.log('Component B mounted')
+    },
+    activated() {
+      console.log('Component B activated')
+    },
+    deactivated() {
+      console.log('Component B deactivated')
+    }
   })
 
   let app = new Vue({
     el: '#app',
     data() {
       return {
-        message: 'hello vue'
+        currentComponent: 'A'
       }
     },
-    methods: {},
+    methods: {
+      change() {
+        this.currentComponent = this.currentComponent === 'A' ? 'B':'A'
+      }
+    },
     template: `
       <div id="app">
-        <h3>{{message | capitalize}}</h3>
-        <h3>{{message | suffix('!')}}</h3>
-        <h3>{{message | capitalize | prefix}}</h3>
+        <keep-alive>
+          <component :is="currentComponent"></component>
+        </keep-alive>
+        <button @click="change">switch</button>
       </div>
     `
   })
