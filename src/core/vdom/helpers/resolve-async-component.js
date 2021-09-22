@@ -12,11 +12,6 @@ import {
 
 import { createEmptyVNode } from 'core/vdom/vnode'
 
-/**
- * 异步组件实现的本质是 2 次渲染，先渲染成注释节点，当组件加载成功后，再通过 forceRender 重新渲染
- *
- * Vue 高级异步组件 的实现是很巧妙的，很值得我们借鉴和学习
- */
 
 function ensureCtor (comp: any, base) {
   if (
@@ -45,6 +40,8 @@ export function createAsyncPlaceholder (
   return node
 }
 
+// 异步组件实现的本质是 2 次渲染，先渲染成注释节点，当组件加载成功后，再通过 forceRender 重新渲染
+// 异步组件的写法
 // 1：处理异步组件（工厂函数）
 // 最终返回 该组件的构造函数
 // Vue.component('HelloWorld', function (resolve, reject) {
@@ -83,7 +80,7 @@ export function resolveAsyncComponent (
   // 无论异步组件的信息是否正常获取，都会将相关信息赋值到 factory 上面，这里的相关信息包括
   // error、resolved、loading 等表示异步组件获取状态的变量，然后执行 forceRender 方法
   // 重新渲染，这会再次进入 resolveAsyncComponent 函数，此时就可以根据 error、resolved、loading
-  // 等数据判断异步组件的加载状态，返回对象的组件信息
+  // 等数据判断异步组件的加载状态，返回对应的组件信息
   //
   // 如果 factory.error 变量为 true 的话，说明异步组件加载失败了，此时需要判断 factory.errorComp
   // 有没有定义，如果定义了的话，则返回这个异步组件加载失败时应该显示的 error 组件
@@ -111,7 +108,7 @@ export function resolveAsyncComponent (
   // 代码会进入 else 的逻辑，在 else 的逻辑中，factory.contexts 会被定义，这个 contexts
   // 是一个数组，数组中存储使用了当前异步组件的 Vue 实例
   //
-  // 下次执行到这时，说明当前的异步组件被多次使用了，factory.contexts 已经被定义，此时将当前的 Vue 实例
+  // 下次执行到这时，说明当前的异步组件已经被使用了，factory.contexts 已经被定义，此时将当前的 Vue 实例
   // push 到 factory.contexts 数组中即可
   //
   // 那么这个 factory.contexts 数组有什么用呢？其实这个数组用于存储当前这个异步组件在加载中的时候，使用了
