@@ -2852,6 +2852,7 @@ function lifecycleMixin (Vue) {
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
     if (!prevVnode) {
+      debugger
       // 首次渲染
       vm.$el = vm.__patch__(
         vm.$el, vnode, hydrating, false /* removeOnly */,
@@ -2862,6 +2863,7 @@ function lifecycleMixin (Vue) {
       // this prevents keeping a detached DOM tree in memory (#5851)
       vm.$options._parentElm = vm.$options._refElm = null;
     } else {
+      debugger
       // 依赖的数据更新时，页面需要重新渲染
       vm.$el = vm.__patch__(prevVnode, vnode);
     }
@@ -4562,8 +4564,6 @@ function createComponent (
   children,
   tag
 ) {
-  // debugger point
-  debugger
   if (isUndef(Ctor)) {
     return
   }
@@ -4925,6 +4925,7 @@ function renderMixin (Vue) {
 
   // Vue 原型上的 _render 函数，它的作用是生成 VNode
   Vue.prototype._render = function () {
+    debugger
     var vm = this;
     // 拿到当前 Vue 实例的 render 函数，这个 render 函数可以用户自己写，也可以由 Vue 帮助生成
     var ref = vm.$options;
@@ -5446,11 +5447,13 @@ var KeepAlive = {
   },
 
   created: function created () {
+    debugger
     this.cache = Object.create(null);
     this.keys = [];
   },
 
   destroyed: function destroyed () {
+    debugger
     var this$1 = this;
 
     for (var key in this$1.cache) {
@@ -5460,14 +5463,17 @@ var KeepAlive = {
 
   watch: {
     include: function include (val) {
+      debugger
       pruneCache(this, function (name) { return matches(val, name); });
     },
     exclude: function exclude (val) {
+      debugger
       pruneCache(this, function (name) { return !matches(val, name); });
     }
   },
 
   render: function render () {
+    debugger
     var vnode = getFirstComponentChild(this.$slots.default);
     var componentOptions = vnode && vnode.componentOptions;
     if (componentOptions) {
@@ -6102,6 +6108,7 @@ function createPatchFunction (backend) {
   }
 
   function initComponent (vnode, insertedVnodeQueue) {
+    debugger
     if (isDef(vnode.data.pendingInsert)) {
       insertedVnodeQueue.push.apply(insertedVnodeQueue, vnode.data.pendingInsert);
       vnode.data.pendingInsert = null;
@@ -6120,6 +6127,7 @@ function createPatchFunction (backend) {
   }
 
   function reactivateComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
+    debugger
     var i;
     // hack for #4339: a reactivated component with inner transition
     // does not trigger because the inner node's created hooks are not called

@@ -14,10 +14,23 @@
   Vue.component('A', {
     template: `
       <div class="a">
-        <h3>A Component</h3>
+        <button @click="changeTab(1)">switch 1</button>
+        <button @click="changeTab(2)">switch 2</button>
+        <button @click="changeTab(3)">switch 3</button>
+        <h3>currentTab：{{currentTab}}</h3>
       </div>
     `,
     name: 'A',
+    data() {
+      return {
+        currentTab: 1
+      }
+    },
+    methods: {
+      changeTab(t){
+        this.currentTab = t
+      }
+    },
     mounted() {
       console.log('Component A mounted')
     },
@@ -61,10 +74,12 @@
     },
     template: `
       <div id="app">
+        <button @click="change">change component</button>
+        <hr style=" height:2px;border:none;border-top:2px dotted #185598;" />
         <keep-alive>
           <component :is="currentComponent"></component>
         </keep-alive>
-        <button @click="change">switch</button>
+        <hr style=" height:2px;border:none;border-top:2px dotted #185598;" />
       </div>
     `
   })
